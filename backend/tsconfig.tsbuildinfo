@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/controller/blogcontroller.ts","./src/controller/usercontroller.ts","./src/model/blogschema.ts","./src/model/userschema.ts","./src/routes/blogroute.ts","./src/routes/userroute.ts"],"version":"5.7.3"}

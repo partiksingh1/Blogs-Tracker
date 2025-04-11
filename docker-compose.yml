@@ -1,0 +1,31 @@
+services:
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    environment:
+      VITE_BASE_URL: "http://localhost:5000/api/v1"  # This should work inside the container
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: "production"
+    env_file:
+      - ./backend/.env
+    networks:
+      - app-network  # Ensure backend is also connected to the same network
+
+networks:
+  app-network:
+    driver: bridge  # This ensures internal communication between containers

@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  username    String
+  email       String   @unique
+  password    String
+  picture     String?
+  bio         String?
+  blogs       Blog[]
+  notes       Note[]
+  tags        Tag[]
+  resetToken  String? @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+}
+
+model Blog {
+  id             Int              @id @default(autoincrement())
+  userId         Int
+  url            String
+  title          String?
+  isRead         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now())
+  user           User             @relation(fields: [userId], references: [id])
+  notes          Note[]
+  categories     Category[]       @relation("BlogCategories") // Add inverse relation
+  tags           Tag[]            @relation("BlogTags")
+}
+
+model Category {
+  id             Int              @id @default(autoincrement())
+  userId         Int
+  name           String        
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now())
+  blogs          Blog[]           @relation("BlogCategories")
+  @@unique([userId, name])
+}
+model Tag {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  name      String
+  user      User       @relation(fields: [userId], references: [id])
+  blogs     Blog[]     @relation("BlogTags")
+  createdAt DateTime   @default(now())
+  @@unique([userId, name])
+}
+
+model Note {
+  id     Int    @id @default(autoincrement())
+  blogId Int
+  userId Int
+  text   String
+  blog   Blog   @relation(fields: [blogId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+}
