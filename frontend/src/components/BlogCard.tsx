@@ -1,7 +1,7 @@
 import { Blog, Tag } from "@/types/blog";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Check, ExternalLink, GemIcon, Loader2, Plus, StarIcon, Stars, Trash2Icon } from "lucide-react";
+import { Check, ExternalLink, Loader2, Plus, Stars, Trash2Icon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "./ui/dialog"; // Import ShadCN modal components
 import { Badge } from "@/components/ui/badge"
 import { Input } from "./ui/input"
@@ -46,7 +46,7 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const [status, setStatus] = useState(blog.isRead ? "READ" : "UNREAD");
     const [openTextDialog, setOpenTextDialog] = useState(false);
     const [openAiTextDialog, setOpenAiTextDialog] = useState(false);
-    const [aiText,setAiText]=useState("")
+    const [aiText, setAiText] = useState("")
     const [isLoading, setIsLoading] = useState(false); // Track loading state
     const [openTagDeleteDialog, setOpenTagDeleteDialog] = useState(false)
     const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -175,7 +175,7 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                 {
                     data: {
                         blogId: blog.id,
-                        userId: parseInt(userId,10),
+                        userId: parseInt(userId, 10),
                         tagName: selectedTag
                     },
                     headers: {
@@ -212,12 +212,12 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
             const response = await axios.post(
                 `${import.meta.env.VITE_BASE_URL}/summarize`,
                 {
-                        url:blog.url,
-                },{
-                    headers: {
-                        Authorization: `${token}`,
-                    },
-                }
+                    url: blog.url,
+                }, {
+                headers: {
+                    Authorization: `${token}`,
+                },
+            }
             );
 
             if (response.status === 200) {
@@ -260,9 +260,9 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
             <CardContent>
                 <div className="flex justify-between">
                     <Button onClick={() => window.open(blog.url, '_blank')} className="w-1/6 underline m-2 text-xs text-black bg-green-400 hover:text-white"><ExternalLink /></Button>
-                    <Button onClick={() => 
+                    <Button onClick={() =>
                         setOpenTextDialog(true)
-                    } className="w-3/6  m-2 px-6 text-xs text-white bg-blue-600 hover:text-white"><Stars/>Summarize with AI</Button>
+                    } className="w-3/6  m-2 px-6 text-xs text-white bg-blue-600 hover:text-white"><Stars />Summarize with AI</Button>
                     <Select
                         value={status}
                         onValueChange={(value) => handleStatusChange(value)}
@@ -289,7 +289,7 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                                     <button onClick={() => {
                                         setSelectedTag(tag.name)
                                         setOpenTagDeleteDialog(true)
-                                        }} className="">
+                                    }} className="">
                                         <Badge key={tag.name} className={randomColor}>
                                             {tag.name}
                                         </Badge>
@@ -326,18 +326,17 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                         >
                             Cancel
                         </Button>
-                        {isLoading ? (
-                            // Show the loading spinner when isLoading is true
-                            <Loader2 className="animate-spin h-4 w-4 mr-2" />
-                        ) : (
-                            <Button
-                                onClick={handleDelete} // Proceed with delete
-                                className="bg-red-600"
-                                disabled={isLoading}
-                            >
-                                Delete
-                            </Button>
-                        )}
+                        <Button
+                            onClick={handleDelete} // Proceed with delete
+                            className="bg-red-600"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <Loader2 className="animate-spin" /> // Show loading spinner when isLoading is true
+                            ) : (
+                                'Delete' // Show button text when not loading
+                            )}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -355,69 +354,65 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                         >
                             Cancel
                         </Button>
-                        {isLoading ? (
-                            // Show the loading spinner when isLoading is true
-                            <Loader2 className="animate-spin" />
-                        ) : (
-                            <Button
-                                onClick={handleTag} // Proceed with delete
-                                className="bg-green-600"
-                                disabled={isLoading}
-                            >
-                                Add
-                            </Button>
-                        )}
+                        <Button
+                            onClick={handleTag} // Proceed with delete
+                            className={`bg-green-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <Loader2 className="animate-spin" /> // Show loading spinner when isLoading is true
+                            ) : (
+                                'Add' // Show button text when not loading
+                            )}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
             <Dialog open={openTagDeleteDialog} onOpenChange={setOpenTagDeleteDialog}>
                 <DialogContent>
-                        {isLoading ? (
-                            // Show the loading spinner when isLoading is true
-                            <Loader2 className="animate-spin" />
-                        ) : (
-                            <div className="flex justify-center">
-                                <Button
-                                    id="tag"
-                                    value={selectedTag}
-                                    onClick={handleDeleteTag}
-                                    className="bg-red-600 w-1/2"
-                                    disabled={isLoading}
-                                >
-                                    Delete
-                                </Button>
-                            </div>
-
-                        )}
+                    <div className="flex justify-center">
+                        <Button
+                            id="tag"
+                            value={selectedTag}
+                            onClick={handleDeleteTag}
+                            className="bg-red-600 w-1/2"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <Loader2 className="animate-spin" /> // Show loading spinner when isLoading is true
+                            ) : (
+                                'Delete' // Show button text when not loading
+                            )}
+                        </Button>
+                    </div>
                 </DialogContent>
             </Dialog>
             <Dialog open={openTextDialog} onOpenChange={setOpenTextDialog}>
                 <DialogContent>
-                        <DialogHeader>Do you want to summarize this blog using AI ? </DialogHeader>
-                        <Button
-                            onClick={() => setOpenTagDialog(false)} // Close modal without deleting
-                            variant="secondary"
-                            className="mr-2"
-                        >
-                            Cancel
-                        </Button>
+                    <DialogHeader>Do you want to summarize this blog using AI ? </DialogHeader>
+                    <Button
+                        onClick={() => setOpenTagDialog(false)} // Close modal without deleting
+                        variant="secondary"
+                        className="mr-2"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleSummarize} // Proceed with the summarization
+                        className={`bg-blue-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={isLoading} // Disables the button when loading
+                    >
                         {isLoading ? (
-                            // Show the loading spinner when isLoading is true
-                            <Loader2 className="animate-spin" />
+                            <Loader2 className="animate-spin" /> // Show loading spinner when isLoading is true
                         ) : (
-                            <Button
-                                onClick={handleSummarize} // Proceed with delete
-                                className="bg-blue-600"
-                                disabled={isLoading}
-                            >
-                                Sure, Do it
-                            </Button>
+                            'Sure, Do it' // Show button text when not loading
                         )}
+                    </Button>
                 </DialogContent>
             </Dialog>
             <Dialog open={openAiTextDialog} onOpenChange={setOpenAiTextDialog}>
                 <DialogContent>
-                        <p>{aiText}</p>
+                    <p>{aiText}</p>
                 </DialogContent>
             </Dialog>
         </Card>
