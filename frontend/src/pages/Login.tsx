@@ -109,7 +109,7 @@ export const Login = () => {
         <div className="w-full flex items-center justify-center space-y-4  px-4 md:w-1/2">
           <div className="space-y-4">
             <h2 className="text-3xl font-bold">Welcome back to BlogHub</h2>
-            <p className="text-lg">Login to continue your Blogs Journey</p>
+            <p className="text-lg">Login to continue your Blogs Journey using AI</p>
           </div>
         </div>
 
