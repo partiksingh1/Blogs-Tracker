@@ -4,6 +4,7 @@ import { blogRouter } from "./routes/blogRoute.js";
 import dotenv from 'dotenv'
 import cors from 'cors';
 import https from 'https'; 
+import { aiRouter } from "./routes/aiRoute.js";
 const port = 3000;
 const app = express();
 dotenv.config()
@@ -23,6 +24,7 @@ app.get("/", (req,res)=>{
 })
 app.use("/api/v1",userRouter)
 app.use("/api/v1",blogRouter)
+app.use("/api/v1",aiRouter)
 
 const keepAlive = () => {
     https.get('https://blogzone-backend.onrender.com', (res) => {

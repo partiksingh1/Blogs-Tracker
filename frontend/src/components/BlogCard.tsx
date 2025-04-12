@@ -1,7 +1,7 @@
 import { Blog, Tag } from "@/types/blog";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Check, ExternalLink, Loader2, Plus, Trash2Icon } from "lucide-react";
+import { Check, ExternalLink, GemIcon, Loader2, Plus, StarIcon, Stars, Trash2Icon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "./ui/dialog"; // Import ShadCN modal components
 import { Badge } from "@/components/ui/badge"
 import { Input } from "./ui/input"
@@ -44,6 +44,9 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const [tag, setTag] = useState("")
     const [selectedTag, setSelectedTag] = useState<string>("");
     const [status, setStatus] = useState(blog.isRead ? "READ" : "UNREAD");
+    const [openTextDialog, setOpenTextDialog] = useState(false);
+    const [openAiTextDialog, setOpenAiTextDialog] = useState(false);
+    const [aiText,setAiText]=useState("")
     const [isLoading, setIsLoading] = useState(false); // Track loading state
     const [openTagDeleteDialog, setOpenTagDeleteDialog] = useState(false)
     const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -197,6 +200,43 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
             setSelectedTag('')
         }
     }
+    const handleSummarize = async () => {
+        setIsLoading(true);
+        const token = localStorage.getItem("token");
+        const userId = localStorage.getItem("userId");
+        if (!token || !userId) {
+            toast.error("Invalid Login, Please Login again");
+            return;
+        }
+        try {
+            const response = await axios.post(
+                `${import.meta.env.VITE_BASE_URL}/summarize`,
+                {
+                        url:blog.url,
+                },{
+                    headers: {
+                        Authorization: `${token}`,
+                    },
+                }
+            );
+
+            if (response.status === 200) {
+                setAiText(response.data.summary)
+                toast.success("Successfully summarized!");
+                setOpenTextDialog(false)
+                setOpenAiTextDialog(true)
+
+            } else {
+                toast.error("Failed to summarize blog");
+            }
+        } catch (error) {
+            console.error("Error summarize:", error);
+            toast.error("Failed to summarize");
+        } finally {
+            setIsLoading(false);
+            setOpenTextDialog(false)
+        }
+    }
     return (
         <Card className="w-full p-1 transform transition-all duration-300 hover:shadow-lg hover:scale-105">
             <CardHeader>
@@ -219,13 +259,16 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
             </CardHeader>
             <CardContent>
                 <div className="flex justify-between">
-                    <Button onClick={() => window.open(blog.url, '_blank')} className="w-1/3 underline text-xs text-black bg-green-400 hover:text-white"><ExternalLink />VISIT LINK</Button>
+                    <Button onClick={() => window.open(blog.url, '_blank')} className="w-1/6 underline m-2 text-xs text-black bg-green-400 hover:text-white"><ExternalLink /></Button>
+                    <Button onClick={() => 
+                        setOpenTextDialog(true)
+                    } className="w-3/6  m-2 px-6 text-xs text-white bg-blue-600 hover:text-white"><Stars/>Summarize with AI</Button>
                     <Select
                         value={status}
                         onValueChange={(value) => handleStatusChange(value)}
                         disabled={isLoading}
                     >
-                        <SelectTrigger className="w-1/3">
+                        <SelectTrigger className="w-2/6 m-2">
                             <SelectValue placeholder="STATUS" />
                         </SelectTrigger>
                         <SelectContent>
@@ -346,6 +389,35 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                             </div>
 
                         )}
+                </DialogContent>
+            </Dialog>
+            <Dialog open={openTextDialog} onOpenChange={setOpenTextDialog}>
+                <DialogContent>
+                        <DialogHeader>Do you want to summarize this blog using AI ? </DialogHeader>
+                        <Button
+                            onClick={() => setOpenTagDialog(false)} // Close modal without deleting
+                            variant="secondary"
+                            className="mr-2"
+                        >
+                            Cancel
+                        </Button>
+                        {isLoading ? (
+                            // Show the loading spinner when isLoading is true
+                            <Loader2 className="animate-spin" />
+                        ) : (
+                            <Button
+                                onClick={handleSummarize} // Proceed with delete
+                                className="bg-blue-600"
+                                disabled={isLoading}
+                            >
+                                Sure, Do it
+                            </Button>
+                        )}
+                </DialogContent>
+            </Dialog>
+            <Dialog open={openAiTextDialog} onOpenChange={setOpenAiTextDialog}>
+                <DialogContent>
+                        <p>{aiText}</p>
                 </DialogContent>
             </Dialog>
         </Card>
