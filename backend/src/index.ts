@@ -27,7 +27,7 @@ app.use("/api/v1",blogRouter)
 app.use("/api/v1",aiRouter)
 
 const keepAlive = () => {
-    https.get('https://blogzone-backend.onrender.com', (res) => {
+    https.get('https://blogzone-5b2j.onrender.com', (res) => {
         console.log(`Keep-alive pinged: ${res.statusCode}`);
     }).on('error', (err) => {
         console.error(`Error pinging: ${err.message}`);
