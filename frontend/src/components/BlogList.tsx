@@ -7,23 +7,22 @@ import axios from "axios";
 import toast from 'react-hot-toast';
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card } from "./ui/card";
+import { getAuth } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
 export const BlogList = () => {
   const [blogs, setBlogs] = useState<Blog[]>([]);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("createdAt");
   const [filterBy, setFilterby] = useState("all");
   const [loading, setLoading] = useState(false);
+  let navigate = useNavigate();
 
   // Fetch blogs from the API
   const fetchBlogs = async () => {
     setLoading(true);
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-
-    if (!token || !userId) {
-      toast.error("Invalid Login, Please Login again");
-      return;
-    }
+    const auth = getAuth(navigate);
+        if(!auth)return;
+        const{token,userId} = auth;
 
     try {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/blogs/${userId}`, {

@@ -13,6 +13,7 @@ import { ChangeEvent, useState } from "react"
 import axios from "axios"
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom"
+import { getAuth } from "@/lib/auth"
 export const CreateBlog = () => {
     const [title, setTitle] = useState("")
     const [url, setUrl] = useState("")
@@ -35,14 +36,11 @@ export const CreateBlog = () => {
     }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
-        const token = localStorage.getItem("token")
-        const userId = localStorage.getItem("userId")
-
-        if (!token) {
-            toast.loading("Invalid Login, Please Login again")
-            navigate("/login")
-        }
         setLoading(true)
+
+    const auth = getAuth(navigate);
+    if(!auth)return;
+    const{token,userId} = auth;
         e.preventDefault()
         console.log("form data is ", title, url, category, isRead);
         try {

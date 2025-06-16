@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/select"
 import { useState } from "react";
 import axios from "axios";
+import { getAuth } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
 const colors = [
     "bg-red-600", "bg-red-700", "bg-red-800", // Red shades
     "bg-blue-600", "bg-blue-700", "bg-blue-800", // Blue shades
@@ -52,15 +54,12 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTag(e.target.value)
     }
+    let navigate = useNavigate();
     const handleStatusChange = async (newStatus: string) => {
         setIsLoading(true);
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-
-        if (!token || !userId) {
-            toast.error("Invalid Login, Please Login again");
-            return;
-        }
+        const auth = getAuth(navigate);
+        if(!auth)return;
+        const{token,userId} = auth;
 
         try {
             const response = await axios.put(
@@ -92,12 +91,9 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     };
     const handleDelete = async () => {
         setIsLoading(true);
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-        if (!token || !userId) {
-            toast.error("Invalid Login, Please Login again");
-            return;
-        }
+        const auth = getAuth(navigate);
+        if(!auth)return;
+        const{token} = auth;
         try {
             const response = await axios.delete(
                 `${import.meta.env.VITE_BASE_URL}/blog/${blog.id}`,
@@ -124,12 +120,9 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     }
     const handleTag = async () => {
         setIsLoading(true);
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-        if (!token || !userId) {
-            toast.error("Invalid Login, Please Login again");
-            return;
-        }
+        const auth = getAuth(navigate);
+        if(!auth)return;
+        const{token,userId} = auth;
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BASE_URL}/blog/tag`,
@@ -163,12 +156,9 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     }
     const handleDeleteTag = async () => {
         setIsLoading(true);
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-        if (!token || !userId) {
-            toast.error("Invalid Login, Please Login again");
-            return;
-        }
+        const auth = getAuth(navigate);
+        if(!auth)return;
+        const{token,userId} = auth;
         try {
             const response = await axios.delete(
                 `${import.meta.env.VITE_BASE_URL}/delete/tag`,
@@ -202,12 +192,9 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     }
     const handleSummarize = async () => {
         setIsLoading(true);
-        const token = localStorage.getItem("token");
-        const userId = localStorage.getItem("userId");
-        if (!token || !userId) {
-            toast.error("Invalid Login, Please Login again");
-            return;
-        }
+        const auth = getAuth(navigate);
+    if (!auth) return;
+    const { token } = auth;
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BASE_URL}/summarize`,
