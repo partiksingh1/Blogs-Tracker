@@ -4,10 +4,10 @@ export interface Blog{
     url:string,
     isRead:boolean,
     createdAt:Date
-    category:{
+    categories:{
         id:number,
         name:string
-    }
+    }[]
     tags:Tag[]
 }
 export interface Tag{

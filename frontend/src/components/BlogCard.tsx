@@ -1,7 +1,7 @@
 import { Blog, Tag } from "@/types/blog";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { Check, ExternalLink, Loader2, Plus, Stars, Trash2Icon } from "lucide-react";
+import { ExternalLink, Loader2, Stars } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "./ui/dialog"; // Import ShadCN modal components
 import { Badge } from "@/components/ui/badge"
 import { Input } from "./ui/input"
@@ -58,8 +58,8 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const handleStatusChange = async (newStatus: string) => {
         setIsLoading(true);
         const auth = getAuth(navigate);
-        if(!auth)return;
-        const{token,userId} = auth;
+        if (!auth) return;
+        const { token, userId } = auth;
 
         try {
             const response = await axios.put(
@@ -92,8 +92,8 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const handleDelete = async () => {
         setIsLoading(true);
         const auth = getAuth(navigate);
-        if(!auth)return;
-        const{token} = auth;
+        if (!auth) return;
+        const { token } = auth;
         try {
             const response = await axios.delete(
                 `${import.meta.env.VITE_BASE_URL}/blog/${blog.id}`,
@@ -121,8 +121,8 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const handleTag = async () => {
         setIsLoading(true);
         const auth = getAuth(navigate);
-        if(!auth)return;
-        const{token,userId} = auth;
+        if (!auth) return;
+        const { token, userId } = auth;
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BASE_URL}/blog/tag`,
@@ -157,8 +157,8 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const handleDeleteTag = async () => {
         setIsLoading(true);
         const auth = getAuth(navigate);
-        if(!auth)return;
-        const{token,userId} = auth;
+        if (!auth) return;
+        const { token, userId } = auth;
         try {
             const response = await axios.delete(
                 `${import.meta.env.VITE_BASE_URL}/delete/tag`,
@@ -193,8 +193,8 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const handleSummarize = async () => {
         setIsLoading(true);
         const auth = getAuth(navigate);
-    if (!auth) return;
-    const { token } = auth;
+        if (!auth) return;
+        const { token } = auth;
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BASE_URL}/summarize`,
@@ -230,74 +230,55 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                 <CardTitle className="flex flex-col items-start">
                     {blog.title}
                 </CardTitle>
-                <CardDescription className="flex flex-col items-start">
-                    Added on {new Date(blog.createdAt).toLocaleDateString()}
+                <CardDescription className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">
+                        {new Date(blog.createdAt).toLocaleDateString()}
+                    </span>
+
+                    <Select
+                        value={status}
+                        onValueChange={handleStatusChange}
+                        disabled={isLoading}
+                    >
+                        <SelectTrigger className="w-[120px] ml-4">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="READ">Read</SelectItem>
+                            <SelectItem value="UNREAD">Unread</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </CardDescription>
-                {blog.isRead ? (
-                    <Badge className="w-full bg-gray-400 text-white" variant="secondary">
-                        <Check className="h-3 w-3" />
-                        <span>Read</span>
-                    </Badge>
-                ) : (
-                    <Badge className="w-full bg-gray-600" variant="default">
-                        <span>Unread</span>
-                    </Badge>
-                )}
+
+
             </CardHeader>
             <CardContent>
                 <div className="flex justify-between">
-                    <Button onClick={() => window.open(blog.url, '_blank')} className="w-1/6 underline m-2 text-xs text-black bg-green-400 hover:text-white"><ExternalLink /></Button>
+                    <Button onClick={() => window.open(blog.url, '_blank')} className="w-1/6 underline text-xs text-black bg-green-400 hover:text-white"><ExternalLink /></Button>
                     <Button onClick={() =>
                         setOpenTextDialog(true)
-                    } className="w-3/6  m-2 px-6 text-xs text-white bg-blue-600 hover:text-white"><Stars />Summarize with AI</Button>
-                    <Select
-                        value={status}
-                        onValueChange={(value) => handleStatusChange(value)}
-                        disabled={isLoading}
-                    >
-                        <SelectTrigger className="w-2/6 m-2">
-                            <SelectValue placeholder="STATUS" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="READ">READ</SelectItem>
-                            <SelectItem value="UNREAD">UNREAD</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    } className="w-3/6 text-xs text-white bg-blue-600 hover:text-white"><Stars />Summarize with AI</Button>
                 </div>
             </CardContent>
             <CardFooter>
-                {blog.tags && blog.tags.length > 0 ? (
-                    <div className="flex flex-wrap overflow-hidden">
-                        <div className="flex flex-row flex-wrap">
-                            {blog.tags.map((tag: Tag) => {
-                                // Randomly choose a color from the `colors` array
-                                const randomColor = `m-1 ${colors[Math.floor(Math.random() * colors.length)]}`;
-                                return (
-                                    <button onClick={() => {
-                                        setSelectedTag(tag.name)
-                                        setOpenTagDeleteDialog(true)
-                                    }} className="">
-                                        <Badge key={tag.name} className={randomColor}>
-                                            {tag.name}
-                                        </Badge>
-                                    </button>
-                                );
-                            })}
-                            <Plus onClick={() => { setOpenTagDialog(true) }} className="m-1 hover:bg-gray-300 rounded-full" />
-                            <button onClick={() => setOpenDeleteDialog(true)}>
-                                <Trash2Icon className="m-1 hover:bg-gray-300 rounded text-red-700" />
-                            </button>
-                        </div>
-                    </div>
-                ) : (
-                    <>
-                        <Plus onClick={() => { setOpenTagDialog(true) }}
-                            className="m-1 hover:bg-gray-300 rounded-full" />
-                        <button onClick={() => setOpenDeleteDialog(true)}>
-                            <Trash2Icon className="m-1 hover:bg-gray-300 rounded text-red-700" />
+                {blog.tags.map((tag: Tag) => {
+                    const randomColor = `m-1 ${colors[Math.floor(Math.random() * colors.length)]}`;
+                    return (
+                        <button
+                            key={tag.name} // ✅ Moved here
+                            onClick={() => {
+                                setSelectedTag(tag.name);
+                                setOpenTagDeleteDialog(true);
+                            }}
+                            className=""
+                        >
+                            <Badge className={randomColor}>
+                                {tag.name}
+                            </Badge>
                         </button>
-                    </>
-                )}
+                    );
+                })}
+
             </CardFooter>
             <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
                 <DialogContent>
@@ -380,7 +361,7 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                     <Button
                         onClick={() => setOpenTagDialog(false)} // Close modal without deleting
                         variant="secondary"
-                        className="mr-2"
+                        className=""
                     >
                         Cancel
                     </Button>

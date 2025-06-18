@@ -14,6 +14,7 @@ import axios from "axios"
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom"
 import { getAuth } from "@/lib/auth"
+import { CategorySelect } from "./CategorySelection"
 export const CreateBlog = () => {
     const [title, setTitle] = useState("")
     const [url, setUrl] = useState("")
@@ -26,11 +27,15 @@ export const CreateBlog = () => {
         setTitle(e.target.value)
     }
     const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setUrl(e.target.value)
-    }
-    const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setCategory(e.target.value)
-    }
+        const inputUrl = e.target.value;
+        setUrl(inputUrl);
+
+        const isValidUrl = inputUrl.startsWith("http://") || inputUrl.startsWith("https://");
+
+        if (isValidUrl) {
+            fetchBlogInfo(inputUrl);
+        }
+    };
     const handleDropdownChange = (e: ChangeEvent<HTMLSelectElement>) => {
         setIsRead(e.target.value === "true")
     }
@@ -38,16 +43,16 @@ export const CreateBlog = () => {
         e.preventDefault()
         setLoading(true)
 
-    const auth = getAuth(navigate);
-    if(!auth)return;
-    const{token,userId} = auth;
+        const auth = getAuth(navigate);
+        if (!auth) return;
+        const { token, userId } = auth;
         e.preventDefault()
         console.log("form data is ", title, url, category, isRead);
         try {
             const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/blog`, {
                 title,
                 url,
-                categoryName:category.toLowerCase(),
+                categoryName: category.toLowerCase(),
                 isRead,
                 userId: Number(userId)
             }, {
@@ -71,6 +76,32 @@ export const CreateBlog = () => {
             setLoading(false)
         }
     }
+
+    const fetchBlogInfo = async (inputUrl: string) => {
+
+        const auth = getAuth(navigate);
+        if (!auth) return;
+        const { token } = auth;
+        try {
+            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/fetchContent`, {
+                url: inputUrl
+            }, {
+                headers: {
+                    "Authorization": `${token}`
+                }
+            });
+
+            if (response.data) {
+                const { title } = response.data.data || {};
+                if (title) setTitle(title);
+            }
+        } catch (error) {
+            console.error("Error fetching blog info:", error);
+            toast.error("Could not fetch blog details.");
+        }
+    };
+
+
     if (loading) {
         return (
             <div
@@ -110,7 +141,7 @@ export const CreateBlog = () => {
                             <Label htmlFor="category" className="text-right">
                                 Category
                             </Label>
-                            <Input id="category" value={category} className="col-span-3" onChange={handleCategoryChange} />
+                            <CategorySelect />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="category" className="text-right">

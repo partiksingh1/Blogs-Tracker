@@ -45,7 +45,7 @@ export const AddBlog = async (req: Request, res: Response) => {
                 message: "Not able to add blog"
             })
         }
-        else{
+        else {
             res.status(201).json({
                 message: "Blog added successfully",
                 category,
@@ -67,16 +67,30 @@ export const CreateCategory = async (req: Request, res: Response) => {
         })
     }
     try {
+        const existing = await prisma.category.findFirst({
+            where: {
+                userId: Number(userId),
+                name: categoryName.toLowerCase(),
+            },
+        });
+
+        if (existing) {
+            res.status(409).json({
+                message: "Category already exists",
+                category: existing,
+            });
+            return
+        }
         const category = await prisma.category.upsert({
             where: {
                 userId_name: {
                     userId: userId,
-                    name: categoryName
+                    name: categoryName.toLowerCase()
                 }
             },
             update: {},
             create: {
-                name: `${categoryName}`,
+                name: `${categoryName.toLowerCase()}`,
                 userId: userId
             }
         });
@@ -84,7 +98,7 @@ export const CreateCategory = async (req: Request, res: Response) => {
             res.status(400).json({
                 message: "unable to create category"
             })
-        }else{
+        } else {
             res.status(201).json({
                 message: "Category created successfully",
                 category
@@ -93,6 +107,34 @@ export const CreateCategory = async (req: Request, res: Response) => {
     } catch (error) {
         res.status(500).json({
             message: "Internal server error in creating category"
+        })
+    }
+}
+export const GetCategory = async (req: Request, res: Response) => {
+    const userId = parseInt(req.params.userId);
+    if (!userId) {
+        res.status(400).json({
+            message: "Invalid user, please provide a userId"
+        })
+    }
+    try {
+        const categories = await prisma.category.findMany({
+            where: {
+                userId: userId
+            }
+        })
+        if (!categories) {
+            res.status(404).json({
+                message: "No categories found for this user"
+            })
+        }
+        res.status(200).json({
+            message: "categories successfully fetched",
+            categories
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error in getting categories"
         })
     }
 }
@@ -257,7 +299,7 @@ export const JoinTags = async (req: Request, res: Response) => {
 
     // Validate input parameters
     if (!userId || !tagName || tagName.trim() === "") {
-         res.status(400).json({
+        res.status(400).json({
             message: "Provide valid userId and tag name."
         });
         return
@@ -267,7 +309,7 @@ export const JoinTags = async (req: Request, res: Response) => {
     const parsedUserId = parseInt(userId, 10);
 
     if (isNaN(parsedUserId)) {
-         res.status(400).json({
+        res.status(400).json({
             message: "Invalid userId provided. It should be an integer."
         });
         return
@@ -301,66 +343,66 @@ export const JoinTags = async (req: Request, res: Response) => {
             });
 
             if (blog) {
-                 res.status(200).json({
+                res.status(200).json({
                     message: "Tag added successfully to the blog",
                     blog,
                     tag
                 });
                 return
             } else {
-                 res.status(500).json({
+                res.status(500).json({
                     message: "Failed to update the blog with the tag."
                 });
                 return
             }
         } else {
-             res.status(500).json({
+            res.status(500).json({
                 message: "Failed to create or update the tag."
             });
             return
         }
     } catch (error) {
         console.error("Error in JoinTags:", error);
-         res.status(500).json({
+        res.status(500).json({
             message: "Internal server error while adding tag to blog."
         });
         return
     }
 };
-export const DeleteTags = async (req:Request,res:Response)=>{
-    const {blogId,userId,tagName}=req.body;
+export const DeleteTags = async (req: Request, res: Response) => {
+    const { blogId, userId, tagName } = req.body;
     if (!userId || !tagName) {
         res.status(400).json({
-           message: "Provide valid userId and tag name."
-       });
-       return
-   }
+            message: "Provide valid userId and tag name."
+        });
+        return
+    }
     try {
         const tag = await prisma.tag.findFirst({
-            where:{
-                userId:userId,
-                name:tagName,
+            where: {
+                userId: userId,
+                name: tagName,
             }
         })
-        console.log(tag);   
-        if(!tag){
+        console.log(tag);
+        if (!tag) {
             res.status(404).json({
-                message:"Tag not found with this name"
+                message: "Tag not found with this name"
             })
             return
         }
-      
+
         await prisma.tag.delete({
-            where:{
-                id:tag.id
+            where: {
+                id: tag.id
             }
         })
         res.status(200).json({
-            message:"Tag deleted from the blog successfully"
+            message: "Tag deleted from the blog successfully"
         })
         return
     } catch (error) {
-        console.log(error);       
+        console.log(error);
         res.status(500).json({
             message: "Internal server error in deleting tags"
         })

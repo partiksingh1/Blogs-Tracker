@@ -88,8 +88,8 @@ export const Signup = () => {
         {/* left section */}
         <div className="w-full flex items-center justify-center space-y-4  px-4 md:w-1/2">
           <div className="text-center space-y-4">
-            <h2 className="text-3xl font-bold">Welcome to BlogHub</h2>
-            <p className="text-lg">Create an account to get started. It's quick and easy!</p>
+            <h2 className="text-3xl font-bold">Welcome to BlogZone</h2>
+            <p className="text-lg">Your intelligent content hub — curate, tag, and summarize the web in one click.</p>
           </div>
         </div>
 

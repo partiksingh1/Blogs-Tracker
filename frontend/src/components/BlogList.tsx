@@ -14,15 +14,35 @@ export const BlogList = () => {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("createdAt");
   const [filterBy, setFilterby] = useState("all");
+  const [categoryBy, setCategoryBy] = useState("");
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
   let navigate = useNavigate();
+
+  const fetchCategories = async () => {
+    const auth = getAuth(navigate);
+    if (!auth) return;
+    const { token, userId } = auth;
+
+    try {
+      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/category/${userId}`, {
+        headers: { Authorization: `${token}` },
+      });
+      if (res.status === 200) {
+        setCategories(res.data.categories);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to fetch categories.");
+    }
+  };
 
   // Fetch blogs from the API
   const fetchBlogs = async () => {
     setLoading(true);
     const auth = getAuth(navigate);
-        if(!auth)return;
-        const{token,userId} = auth;
+    if (!auth) return;
+    const { token, userId } = auth;
 
     try {
       const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/blogs/${userId}`, {
@@ -45,6 +65,7 @@ export const BlogList = () => {
 
   // Fetch blogs on component mount
   useEffect(() => {
+    fetchCategories();
     fetchBlogs();
   }, []);
 
@@ -67,17 +88,25 @@ export const BlogList = () => {
     .filter((blog) => {
       if (filterBy === "read") return blog.isRead;
       if (filterBy === "unread") return !blog.isRead;
-      return true; // If filterBy is "all", no filtering is applied
+      return true;
     })
-    .filter((blog) => blog.title?.toLowerCase().includes(search.toLowerCase())) // Filter by search term
+    .filter((blog) => blog.title?.toLowerCase().includes(search.toLowerCase()))
+    .filter((blog) => {
+      if (!categoryBy || categoryBy === "all") return true;
+
+      return blog.categories?.some(
+        (cat) => cat.name.toLowerCase().trim() === categoryBy.trim().toLowerCase()
+      );
+    })
+
     .sort((a, b) => {
-      if (sort === "title") {
-        return (a.title || "").localeCompare(b.title || ""); // Sort by title
-      }
-      const dateA = new Date(a.createdAt).getTime(); // Convert to timestamp
-      const dateB = new Date(b.createdAt).getTime(); // Convert to timestamp
-      return dateB - dateA; // Sort by createdAt (newest first)
+      if (sort === "title") return (a.title || "").localeCompare(b.title || "");
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateB - dateA;
     });
+
+
   if (loading) {
     return (
       <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-3 mt-20">
@@ -125,6 +154,26 @@ export const BlogList = () => {
             <SelectItem value="unread">Unread</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={categoryBy} onValueChange={(value) => {
+          console.log("Category selected:", value);  // ✅ Debug line
+          setCategoryBy(value);
+        }}>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            {categories
+              .filter((cat) => typeof cat.name === "string" && cat.name.trim() !== "")
+              .map((cat) => (
+                <SelectItem key={cat.id} value={cat.name.trim()}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+
+
       </div>
       <div className="w-full flex flex-col justify-center items-center sm:flex-row gap-4">
         <div className="w-full grid gap-6 md:grid-cols-3 lg:grid-cols-3">
