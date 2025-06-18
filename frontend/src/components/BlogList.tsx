@@ -70,14 +70,14 @@ export const BlogList = () => {
   }, []);
 
   // Handle status change for a blog
-  const handleStatusChange = (blogId: number, newStatus: boolean) => {
+  const handleStatusChange = (blogId: string, newStatus: boolean) => {
     setBlogs((prevBlogs) =>
       prevBlogs.map((blog) =>
         blog.id === blogId ? { ...blog, isRead: newStatus } : blog
       )
     );
   };
-  const handleDelete = (blogId: number) => {
+  const handleDelete = (blogId: string) => {
     setBlogs((prevBlogs) => prevBlogs.filter(blog => blog.id !== blogId));
   };
 

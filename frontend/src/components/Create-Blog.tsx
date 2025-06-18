@@ -54,7 +54,7 @@ export const CreateBlog = () => {
                 url,
                 categoryName: category.toLowerCase(),
                 isRead,
-                userId: Number(userId)
+                userId: userId
             }, {
                 headers: {
                     "Authorization": `${token}`

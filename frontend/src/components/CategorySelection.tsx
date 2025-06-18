@@ -21,9 +21,9 @@ import { getAuth } from "@/lib/auth";
 import { useNavigate } from "react-router-dom";
 
 type Category = {
-  id: number;
+  id: string;
   name: string;
-  userId: number;
+  userId: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -73,7 +73,7 @@ export const CategorySelect = () => {
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/category`,
-        { categoryName: newCategory.toLowerCase(), userId: Number(userId) },
+        { categoryName: newCategory.toLowerCase(), userId: userId },
         { headers: { Authorization: `${token}` } }
       );
 

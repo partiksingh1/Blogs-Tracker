@@ -1,16 +1,16 @@
 export interface Blog{
-    id:number,
+    id:string,
     title:string | null,
     url:string,
     isRead:boolean,
     createdAt:Date
     categories:{
-        id:number,
+        id:string,
         name:string
     }[]
     tags:Tag[]
 }
 export interface Tag{
-    id:number,
+    id:string,
     name:string
 }

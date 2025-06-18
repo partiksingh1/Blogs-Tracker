@@ -1,7 +1,7 @@
 import {z} from 'zod'
 
 export const BlogSchema = z.object({
-    userId : z.number(),
+    userId : z.string(),
     url:z.string().min(8),
     title:z.string().min(3),
     isRead:z.boolean(),

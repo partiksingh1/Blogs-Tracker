@@ -65,11 +65,12 @@ export const CreateCategory = async (req: Request, res: Response) => {
         res.status(400).json({
             message: "Invalid user, please provide a userId"
         })
+        return;
     }
     try {
         const existing = await prisma.category.findFirst({
             where: {
-                userId: Number(userId),
+                userId: userId,
                 name: categoryName.toLowerCase(),
             },
         });
@@ -111,7 +112,7 @@ export const CreateCategory = async (req: Request, res: Response) => {
     }
 }
 export const GetCategory = async (req: Request, res: Response) => {
-    const userId = parseInt(req.params.userId);
+    const userId = req.params.userId;
     if (!userId) {
         res.status(400).json({
             message: "Invalid user, please provide a userId"
@@ -170,7 +171,7 @@ export const DeleteCategory = async (req: Request, res: Response) => {
     }
 }
 export const GetBlogs = async (req: Request, res: Response) => {
-    const userId = parseInt(req.params.userId);
+    const userId = req.params.userId;
     if (!userId) {
         res.status(400).json({
             message: "Invalid user, please provide a userId"
@@ -203,7 +204,7 @@ export const GetBlogs = async (req: Request, res: Response) => {
 }
 export const GetBlogByid = async (req: Request, res: Response) => {
     const { userId } = req.body
-    const blogId = parseInt(req.params.blogId)
+    const blogId = req.params.blogId
 
     if (!userId && !blogId) {
         res.status(404).json({
@@ -234,7 +235,7 @@ export const GetBlogByid = async (req: Request, res: Response) => {
 }
 export const EditBlogById = async (req: Request, res: Response) => {
     const { userId, status } = req.body
-    const blogId = parseInt(req.params.blogId)
+    const blogId = req.params.blogId
     if (!blogId) {
         res.status(400).json({
             message: "no blog id specified"
@@ -266,7 +267,7 @@ export const EditBlogById = async (req: Request, res: Response) => {
     }
 }
 export const DeleteBlogById = async (req: Request, res: Response) => {
-    const blogId = parseInt(req.params.blogId)
+    const blogId = req.params.blogId
     if (!blogId) {
         res.status(400).json({
             message: "no blog id specified"
@@ -305,28 +306,18 @@ export const JoinTags = async (req: Request, res: Response) => {
         return
     }
 
-    // Ensure userId is an integer
-    const parsedUserId = parseInt(userId, 10);
-
-    if (isNaN(parsedUserId)) {
-        res.status(400).json({
-            message: "Invalid userId provided. It should be an integer."
-        });
-        return
-    }
-
     try {
         const tag = await prisma.tag.upsert({
             where: {
                 userId_name: {
-                    userId: parsedUserId,
+                    userId: userId,
                     name: tagName
                 },
             },
             update: {},
             create: {
                 name: tagName,
-                userId: parsedUserId
+                userId: userId
             }
         });
 

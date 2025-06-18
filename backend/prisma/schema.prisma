@@ -8,57 +8,62 @@ datasource db {
 }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  username    String
-  email       String   @unique
-  password    String
-  picture     String?
-  bio         String?
-  blogs       Blog[]
-  notes       Note[]
-  tags        Tag[]
-  resetToken  String? @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @default(now())
+  id         String     @id @default(uuid())
+  username   String
+  email      String     @unique
+  password   String
+  picture    String?
+  bio        String?
+  blogs      Blog[]
+  notes      Note[]
+  tags       Tag[]
+  categories Category[]
+  resetToken String?    @unique
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now())
 }
 
 model Blog {
-  id             Int              @id @default(autoincrement())
-  userId         Int
-  url            String
-  title          String?
-  isRead         Boolean          @default(false)
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @default(now())
-  user           User             @relation(fields: [userId], references: [id])
-  notes          Note[]
-  categories     Category[]       @relation("BlogCategories") // Add inverse relation
-  tags           Tag[]            @relation("BlogTags")
+  id         String     @id @default(uuid())
+  userId     String
+  url        String
+  title      String?
+  isRead     Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @default(now())
+  user       User       @relation(fields: [userId], references: [id])
+  notes      Note[]
+  categories Category[] @relation("BlogCategories")
+  tags       Tag[]      @relation("BlogTags")
 }
 
 model Category {
-  id             Int              @id @default(autoincrement())
-  userId         Int
-  name           String        
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @default(now())
-  blogs          Blog[]           @relation("BlogCategories")
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+  blogs     Blog[]   @relation("BlogCategories")
+  user      User     @relation(fields: [userId], references: [id])
+
   @@unique([userId, name])
 }
+
 model Tag {
-  id        Int        @id @default(autoincrement())
-  userId    Int
+  id        String   @id @default(uuid())
+  userId    String
   name      String
-  user      User       @relation(fields: [userId], references: [id])
-  blogs     Blog[]     @relation("BlogTags")
-  createdAt DateTime   @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  blogs     Blog[]   @relation("BlogTags")
+  createdAt DateTime @default(now())
+
   @@unique([userId, name])
 }
 
 model Note {
-  id     Int    @id @default(autoincrement())
-  blogId Int
-  userId Int
+  id     String @id @default(uuid())
+  blogId String
+  userId String
   text   String
   blog   Blog   @relation(fields: [blogId], references: [id])
   user   User   @relation(fields: [userId], references: [id])

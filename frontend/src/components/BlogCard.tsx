@@ -1,7 +1,7 @@
 import { Blog, Tag } from "@/types/blog";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { ExternalLink, Loader2, Stars } from "lucide-react";
+import { ExternalLink, Loader2, Plus, Stars, Trash2Icon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "./ui/dialog"; // Import ShadCN modal components
 import { Badge } from "@/components/ui/badge"
 import { Input } from "./ui/input"
@@ -35,8 +35,8 @@ const colors = [
 
 interface BlogCardProps {
     blog: Blog
-    onStatusChange: (blogId: number, newStatus: boolean) => void;
-    onDelete: (blogId: number) => void;
+    onStatusChange: (blogId: string, newStatus: boolean) => void;
+    onDelete: (blogId: string) => void;
     fetchBlogs: () => Promise<void>
 }
 
@@ -65,7 +65,7 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
             const response = await axios.put(
                 `${import.meta.env.VITE_BASE_URL}/blog/${blog.id}`,
                 {
-                    userId: Number(userId),
+                    userId: userId,
                     status: newStatus === "READ", // Convert status to boolean
                 },
                 {
@@ -261,24 +261,38 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                 </div>
             </CardContent>
             <CardFooter>
-                {blog.tags.map((tag: Tag) => {
-                    const randomColor = `m-1 ${colors[Math.floor(Math.random() * colors.length)]}`;
-                    return (
-                        <button
-                            key={tag.name} // ✅ Moved here
-                            onClick={() => {
-                                setSelectedTag(tag.name);
-                                setOpenTagDeleteDialog(true);
-                            }}
-                            className=""
-                        >
-                            <Badge className={randomColor}>
-                                {tag.name}
-                            </Badge>
+                {blog.tags && blog.tags.length > 0 ? (
+                    <div className="flex flex-wrap overflow-hidden">
+                        <div className="flex flex-row flex-wrap">
+                            {blog.tags.map((tag: Tag) => {
+                                // Randomly choose a color from the `colors` array
+                                const randomColor = `m-1 ${colors[Math.floor(Math.random() * colors.length)]}`;
+                                return (
+                                    <button onClick={() => {
+                                        setSelectedTag(tag.name)
+                                        setOpenTagDeleteDialog(true)
+                                    }} className="">
+                                        <Badge key={tag.name} className={randomColor}>
+                                            {tag.name}
+                                        </Badge>
+                                    </button>
+                                );
+                            })}
+                            <Plus onClick={() => { setOpenTagDialog(true) }} className="m-1 hover:bg-gray-300 rounded-full" />
+                            <button onClick={() => setOpenDeleteDialog(true)}>
+                                <Trash2Icon className="m-1 hover:bg-gray-300 rounded text-red-700" />
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <Plus onClick={() => { setOpenTagDialog(true) }}
+                            className="m-1 hover:bg-gray-300 rounded-full" />
+                        <button onClick={() => setOpenDeleteDialog(true)}>
+                            <Trash2Icon className="m-1 hover:bg-gray-300 rounded text-red-700" />
                         </button>
-                    );
-                })}
-
+                    </>
+                )}
             </CardFooter>
             <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
                 <DialogContent>
