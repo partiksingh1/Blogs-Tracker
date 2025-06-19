@@ -127,8 +127,8 @@ export const BlogList = () => {
 
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4">
+    <div className="mx-auto max-w-screen-xl px-4">
+      <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <Input
           placeholder="Search blogs"
           value={search}

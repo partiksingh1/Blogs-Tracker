@@ -257,7 +257,10 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                     <Button onClick={() => window.open(blog.url, '_blank')} className="w-1/6 underline text-xs text-black bg-green-400 hover:text-white"><ExternalLink /></Button>
                     <Button onClick={() =>
                         setOpenTextDialog(true)
-                    } className="w-3/6 text-xs text-white bg-blue-600 hover:text-white"><Stars />Summarize with AI</Button>
+                    } className="w-3/6 text-xs text-white bg-blue-600 hover:text-white"><Stars />
+                    <span className="block sm:hidden">AI</span>
+                    <span className="hidden sm:inline">Summarize with AI</span>
+                    </Button>
                 </div>
             </CardContent>
             <CardFooter>
