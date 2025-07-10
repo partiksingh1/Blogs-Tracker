@@ -30,7 +30,7 @@ type Category = {
 
 export const CategorySelect = () => {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [, setSelectedCategory] = useState("");
+  const [, setSelectedCategory] = useState("all");
   const [newCategory, setNewCategory] = useState("");
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -99,11 +99,17 @@ export const CategorySelect = () => {
           <SelectValue placeholder="Choose Category" />
         </SelectTrigger>
         <SelectContent>
-          {categories.map((cat) => (
-            <SelectItem key={cat.id} value={cat.name}>
-              {cat.name}
-            </SelectItem>
-          ))}
+          {categories.map((cat) => {
+            const name = cat.name?.trim();
+            if (!name) return null; // Don't render empty ones
+            return (
+              <SelectItem key={cat.id} value={name}>
+                {name}
+              </SelectItem>
+            );
+          })}
+
+
           <div className="px-4 py-2">
             <Button
               variant="outline"

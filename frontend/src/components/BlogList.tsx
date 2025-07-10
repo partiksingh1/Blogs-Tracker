@@ -165,12 +165,17 @@ export const BlogList = () => {
             <SelectItem value="all">All</SelectItem>
             {categories
               .filter((cat) => typeof cat.name === "string" && cat.name.trim() !== "")
-              .map((cat) => (
-                <SelectItem key={cat.id} value={cat.name.trim()}>
-                  {cat.name}
-                </SelectItem>
-              ))}
+              .filter((cat) => cat.name.trim().length > 0) // ensure no empty string values
+              .map((cat) => {
+                const trimmedName = cat.name.trim();
+                return (
+                  <SelectItem key={cat.id} value={trimmedName}>
+                    {trimmedName}
+                  </SelectItem>
+                );
+              })}
           </SelectContent>
+
         </Select>
 
 
