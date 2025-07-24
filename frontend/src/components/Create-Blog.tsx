@@ -117,7 +117,7 @@ export const CreateBlog = () => {
     return (
         <Dialog>
             <DialogTrigger asChild>
-                <Button variant="outline">ADD BLOG</Button>
+                <Button className="border-black" variant="outline">ADD BLOG</Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>

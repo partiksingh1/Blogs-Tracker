@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"
 
 export function ModeToggle() {
-    const { setTheme, theme } = useTheme()
+  const { setTheme, theme } = useTheme()
   const toggleTheme = () => {
     if (theme === "light") {
       setTheme("dark")
@@ -12,7 +12,7 @@ export function ModeToggle() {
     }
   }
   return (
-    <Button variant="outline" size="icon" onClick={toggleTheme}>
+    <Button className="border-black" variant="outline" size="icon" onClick={toggleTheme}>
       {theme === "light" ? (
         <Sun className="h-[1.2rem] w-[1.2rem]" />
       ) : (

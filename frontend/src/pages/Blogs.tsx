@@ -28,19 +28,12 @@ export const Blogs = () => {
     const handleIntroClose = () => {
         setShowIntro(false);
     };
-
-    const username = localStorage.getItem("username");
-    const heading = username?.toUpperCase();
-
     return (
         <div className="mx-auto max-w-screen-xl">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-center bg-gray-200 dark:bg-black rounded-xl mb-3 p-4 gap-4">
-                <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center sm:text-left">
-                    <span className="underline">{heading}’s</span>&nbsp; Blog Zone!
-                </h1>
-                <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
-                    
+            <div className="flex flex-col sm:flex-row items-center bg-gray-100 dark:bg-black rounded-xl mb-3 p-4 gap-4">
+                <div className="flex gap-10 flex-wrap justify-center sm:justify-between w-full">
+
                     <DropdownMenu>
                         <DropdownMenuTrigger>
                             <Avatar>
@@ -68,7 +61,7 @@ export const Blogs = () => {
             {showIntro && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 px-4 py-3 sm:py-4 text-sm sm:text-base text-center flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 shadow-md z-50">
                     <p className="text-gray-800 dark:text-gray-200">
-                        Welcome to your blog zone! To add a new blog, click the "Add Blog" button on the top-right.
+                        Welcome! To add a new blog/article, click the "Add Blog" button on the top-right.
                     </p>
                     <button
                         onClick={handleIntroClose}

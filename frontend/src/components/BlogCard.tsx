@@ -258,8 +258,8 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                     <Button onClick={() =>
                         setOpenTextDialog(true)
                     } className="w-3/6 text-xs text-white bg-blue-600 hover:text-white"><Stars />
-                    <span className="block sm:hidden">AI</span>
-                    <span className="hidden sm:inline">Summarize with AI</span>
+                        <span className="block sm:hidden">AI</span>
+                        <span className="hidden sm:inline">Summarize with AI</span>
                     </Button>
                 </div>
             </CardContent>
@@ -271,32 +271,45 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                                 // Randomly choose a color from the `colors` array
                                 const randomColor = `m-1 ${colors[Math.floor(Math.random() * colors.length)]}`;
                                 return (
-                                    <button onClick={() => {
-                                        setSelectedTag(tag.name)
-                                        setOpenTagDeleteDialog(true)
-                                    }} className="">
-                                        <Badge key={tag.name} className={randomColor}>
+                                    <button
+                                        onClick={() => {
+                                            setSelectedTag(tag.name);
+                                            setOpenTagDeleteDialog(true);
+                                        }}
+                                        key={tag.name} // Add a unique key here for each tag
+                                    >
+                                        <Badge className={randomColor}>
                                             {tag.name}
                                         </Badge>
                                     </button>
                                 );
                             })}
-                            <Plus onClick={() => { setOpenTagDialog(true) }} className="m-1 hover:bg-gray-300 rounded-full" />
-                            <button onClick={() => setOpenDeleteDialog(true)}>
+                            <Plus
+                                onClick={() => { setOpenTagDialog(true); }}
+                                className="m-1 hover:bg-gray-300 rounded-full"
+                            />
+                            <button onClick={() => setOpenDeleteDialog(true)} key="delete-button">
                                 <Trash2Icon className="m-1 hover:bg-gray-300 rounded text-red-700" />
                             </button>
                         </div>
                     </div>
                 ) : (
                     <>
-                        <Plus onClick={() => { setOpenTagDialog(true) }}
-                            className="m-1 hover:bg-gray-300 rounded-full" />
-                        <button onClick={() => setOpenDeleteDialog(true)}>
+                        <Plus
+                            onClick={() => { setOpenTagDialog(true); }}
+                            className="m-1 hover:bg-gray-300 rounded-full"
+                            key="add-tag-button" // Add a key here for the "add tag" button
+                        />
+                        <button
+                            onClick={() => setOpenDeleteDialog(true)}
+                            key="delete-button-empty" // Key for the delete button when there are no tags
+                        >
                             <Trash2Icon className="m-1 hover:bg-gray-300 rounded text-red-700" />
                         </button>
                     </>
                 )}
             </CardFooter>
+
             <Dialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
                 <DialogContent>
                     <DialogHeader>
