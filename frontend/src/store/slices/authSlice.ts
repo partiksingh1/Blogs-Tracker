@@ -67,10 +67,10 @@ export const signupUser = createAsyncThunk(
 
             const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/signup`, userData)
 
-            if (response.data.token && response.data.userId) {
+            if (response.status == 201) {
                 dispatch(loginSuccess({
                     token: response.data.token,
-                    userId: response.data.userId
+                    userId: response.data.user.id
                 }))
                 return response.data
             } else {
