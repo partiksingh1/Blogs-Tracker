@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
 import toast from 'react-hot-toast';
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -15,7 +14,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks"
+import { signupUser } from "@/store/slices/authSlice"
 const formSchema = z.object({
   username: z.string({
     required_error: 'You must fill in this field.',
@@ -42,14 +43,14 @@ const formSchema = z.object({
 )
 type FormValues = z.infer<typeof formSchema>;
 export const Signup = () => {
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const { isAuthenticated, isLoading } = useAppSelector(state => state.auth)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/blogs");
+    if (isAuthenticated) {
+      navigate('/blogs')
     }
-  }, [navigate]);
+  }, [isAuthenticated, navigate])
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,26 +60,13 @@ export const Signup = () => {
       password: ""
     },
   })
-  const handleSignup = async (data: FormValues) => {
-    setLoading(true);
+  const handleSignup = async (userData: FormValues) => {
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/signup`, {
-        username: data.username,
-        email: data.email,
-        password: data.password
-      })
-      console.log(response);
-      if (response.status == 201) {
-        toast.success("account created successfully")
-        navigate('/login')
-      }
-
-    } catch (error) {
-      console.error(error);
-      const errorMessage = 'An error occurred. Please try again.';
-      toast.error(errorMessage)
-    } finally {
-      setLoading(false)
+      await dispatch(signupUser(userData)).unwrap()
+      toast.success('Signup successful!')
+      navigate('/blogs')
+    } catch (error: any) {
+      toast.error(error || 'Signup failed')
     }
   }
   return (
@@ -158,8 +146,8 @@ export const Signup = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-3/4 bg-black text-white" disabled={loading}>
-                    {loading ? (
+                  <Button type="submit" className="w-3/4 bg-black text-white" disabled={isLoading}>
+                    {isLoading ? (
                       <div className="w-4 h-4 rounded-full border-2 border-x-white animate-spin mr-2" />
                     ) : (
                       'Sign Up'

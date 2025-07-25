@@ -14,10 +14,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useEffect, useState } from "react"
 import { useForm } from "react-hook-form"
 import { useNavigate } from "react-router-dom"
-import axios from "axios"
 import { z } from "zod"
 import toast from 'react-hot-toast';
 import { Loader2 } from "lucide-react";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { forgotPassword, loginUser } from "@/store/slices/authSlice";
 const formSchema = z.object({
   email: z.string({ required_error: "Please enter an email" }).email({ message: "Please provide a valid email address" }),
   password: z.string({ required_error: "Please enter a password" })
@@ -29,42 +30,24 @@ type formValues = z.infer<typeof formSchema>
 export const Login = () => {
   const [openEmailDialog, setOpenEmailDialog] = useState(false); // Track if delete dialog is open
   const [forgetEmail, setForgetEmail] = useState("")
-  const [isLoading, setIsLoading] = useState(false); // Track loading state
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
+  const dispatch = useAppDispatch();
+  const { isAuthenticated, isLoading } = useAppSelector(state => state.auth)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/blogs");
+    if (isAuthenticated) {
+      navigate('/blogs')
     }
-  }, [navigate]);
+  }, [isAuthenticated, navigate])
   const handleForgetEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForgetEmail(e.target.value)
   }
-  const handleForgetEmail = async () => {
-    setIsLoading(true);
+  const handleForgetEmail = async (forgetEmail: string) => {
     try {
-      const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/forgot-password`,
-        {
-          email: forgetEmail
-        },
-      );
-      if (response.status === 200) {
-        toast.success("Please check your email.");
-      }
-      else if (response.status === 404) {
-        toast.error("No user exists with this email");
-      } else {
-        toast.error("Failed to Send Email.");
-      }
-    } catch (error) {
-      console.error("Error Adding tag:", error);
-      toast.error("No user exists with this email");
-    } finally {
-      setIsLoading(false);
-      setOpenEmailDialog(false);
-      setForgetEmail("")
+      await dispatch(forgotPassword(forgetEmail)).unwrap()
+      toast.success('Please chidck your mail!')
+      navigate('/login')
+    } catch (error: any) {
+      toast.error(error || 'Password resetting failed')
     }
   }
   const form = useForm<z.infer<typeof formSchema>>({
@@ -76,31 +59,12 @@ export const Login = () => {
   })
 
   const handleLogin = async (data: formValues) => {
-    setLoading(true)
     try {
-      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/login`, {
-        email: data.email,
-        password: data.password
-      })
-      console.log(response);
-      if (response.status == 200) {
-        toast.success("Login Successfull")
-        localStorage.setItem("token", response.data.token)
-        localStorage.setItem("username", response.data.user.username)
-        localStorage.setItem("userId", response.data.user.id)
-        navigate("/blogs")
-      }
+      await dispatch(loginUser(data)).unwrap()
+      toast.success('Login successful!')
+      navigate('/blogs')
     } catch (error: any) {
-      console.error(error);
-      if (error.status == 401) {
-        toast.error("Incorrect Password!")
-      }
-      if (error.status == 404) {
-        toast.error("No user exists with this mail")
-      }
-
-    } finally {
-      setLoading(false)
+      toast.error(error || 'Login failed')
     }
   }
   return (
@@ -167,8 +131,8 @@ export const Login = () => {
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-3/4 bg-black text-white" disabled={loading}>
-                    {loading ? (
+                  <Button type="submit" className="w-3/4 bg-black text-white" disabled={isLoading}>
+                    {isLoading ? (
                       <div className="w-4 h-4 rounded-full border-2 border-x-white animate-spin mr-2" />
                     ) : (
                       'Login'
@@ -197,7 +161,7 @@ export const Login = () => {
                   <Loader2 className="animate-spin h-4 w-4 mr-2" />
                 ) : (
                   <Button
-                    onClick={handleForgetEmail} // Proceed with delete
+                    onClick={() => handleForgetEmail} // Proceed with delete
                     disabled={isLoading}
                   >
                     Send Email
