@@ -23,7 +23,7 @@ export const loginUser = createAsyncThunk(
                 console.log("reached");
                 dispatch(loginSuccess({
                     token: response.data.token,
-                    userId: response.data.userId
+                    userId: response.data.user.id
                 }))
                 return response.data
             } else {
