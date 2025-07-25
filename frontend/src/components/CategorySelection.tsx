@@ -14,87 +14,54 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import axios from "axios";
 import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { getAuth } from "@/lib/auth";
-import { useNavigate } from "react-router-dom";
-
-type Category = {
-  id: string;
-  name: string;
-  userId: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-export const CategorySelect = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [, setSelectedCategory] = useState("all");
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { RootState } from "@/store/store";
+import { createCategory, fetchCategories } from "@/store/thunks";
+interface CategorySelectProps {
+  onChange: (category: string) => void; // New prop for handling category change
+}
+export const CategorySelect = ({ onChange }: CategorySelectProps) => {
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [newCategory, setNewCategory] = useState("");
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { categories, isCategoryLoading } = useAppSelector((state: RootState) => state.blog);
 
   useEffect(() => {
-    const fetchCategories = async () => {
-      const auth = getAuth(navigate);
-      if (!auth) return;
-      const { token, userId } = auth;
-
-      try {
-        const res = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/category/${userId}`,
-          {
-            headers: { Authorization: `${token}` },
-          }
-        );
-        setCategories(res.data.categories || []);
-      } catch (error) {
-        toast.error("Failed to load categories");
-      }
+    const fetchCategoriesData = async () => {
+      await dispatch(fetchCategories());
     };
-
-    fetchCategories();
-  }, []);
+    fetchCategoriesData();
+  }, [dispatch]);
 
   const handleCreateCategory = async () => {
     if (!newCategory.trim()) {
       toast.error("Category name cannot be empty");
       return;
     }
-
-    const auth = getAuth(navigate);
-    if (!auth) return;
-    const { token, userId } = auth;
-
-    setLoading(true);
-
     try {
-      const res = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/category`,
-        { categoryName: newCategory.toLowerCase(), userId: userId },
-        { headers: { Authorization: `${token}` } }
-      );
-
-      if (res.status === 201) {
-        const created = res.data.category;
-        setCategories([...categories, created]);
-        setSelectedCategory(created.name);
+      const action = await dispatch(createCategory({ categoryName: newCategory.toLowerCase() }));
+      if (createCategory.fulfilled.match(action)) {
+        setSelectedCategory(action.payload.name);
         setNewCategory("");
         setShowAddCategoryModal(false);
         toast.success("Category created!");
+      } else {
+        toast.error(action.payload as string || "Failed to create category");
       }
     } catch (err) {
       toast.error("Category already exists or failed to create");
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
     <div className="flex flex-col gap-2">
-      <Select onValueChange={(value) => setSelectedCategory(value)}>
+      <Select onValueChange={(value) => {
+        setSelectedCategory(value)
+        onChange(value)
+      }} value={selectedCategory}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Choose Category" />
         </SelectTrigger>
@@ -136,8 +103,8 @@ export const CategorySelect = () => {
             />
           </div>
           <DialogFooter>
-            <Button onClick={handleCreateCategory} disabled={loading}>
-              {loading ? "Creating..." : "Create"}
+            <Button onClick={handleCreateCategory} disabled={isCategoryLoading}>
+              {isCategoryLoading ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>
         </DialogContent>

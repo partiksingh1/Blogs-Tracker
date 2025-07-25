@@ -13,10 +13,11 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { getAuth } from "@/lib/auth";
-import { useNavigate } from "react-router-dom";
+import { getAuthFromStore } from "@/lib/auth";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { addTagToBlog, fetchBlogs, removeTagFromBlog } from "@/store/thunks";
 const colors = [
     "bg-red-600", "bg-red-700", "bg-red-800", // Red shades
     "bg-blue-600", "bg-blue-700", "bg-blue-800", // Blue shades
@@ -37,10 +38,10 @@ interface BlogCardProps {
     blog: Blog
     onStatusChange: (blogId: string, newStatus: boolean) => void;
     onDelete: (blogId: string) => void;
-    fetchBlogs: () => Promise<void>
 }
 
-export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCardProps) {
+export function BlogCard({ blog, onStatusChange, onDelete }: BlogCardProps) {
+    const dispatch = useAppDispatch();
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false); // Track if delete dialog is open
     const [openTagDialog, setOpenTagDialog] = useState(false); // Track if delete dialog is open
     const [tag, setTag] = useState("")
@@ -49,150 +50,61 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
     const [openTextDialog, setOpenTextDialog] = useState(false);
     const [openAiTextDialog, setOpenAiTextDialog] = useState(false);
     const [aiText, setAiText] = useState("")
-    const [isLoading, setIsLoading] = useState(false); // Track loading state
     const [openTagDeleteDialog, setOpenTagDeleteDialog] = useState(false)
-    const handleTagChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTag(e.target.value)
-    }
-    let navigate = useNavigate();
+    const { isLoading, isTagLoading } = useAppSelector(state => state.blog)
     const handleStatusChange = async (newStatus: string) => {
-        setIsLoading(true);
-        const auth = getAuth(navigate);
-        if (!auth) return;
-        const { token, userId } = auth;
-
         try {
-            const response = await axios.put(
-                `${import.meta.env.VITE_BASE_URL}/blog/${blog.id}`,
-                {
-                    userId: userId,
-                    status: newStatus === "READ", // Convert status to boolean
-                },
-                {
-                    headers: {
-                        Authorization: `${token}`,
-                    },
-                }
-            );
-
-            if (response.status === 200) {
-                toast.success("Status updated successfully!");
-                setStatus(newStatus); // Update local state
-                onStatusChange(blog.id, newStatus === "READ");
-            } else {
-                toast.error("Failed to update status.");
-            }
+            // Call the onStatusChange prop to update the status in the parent component
+            onStatusChange(blog.id, newStatus === "READ");
+            setStatus(newStatus);
+            toast.success("Status updated successfully!");
         } catch (error) {
             console.error("Error updating status:", error);
             toast.error("Failed to update status.");
-        } finally {
-            setIsLoading(false);
         }
     };
     const handleDelete = async () => {
-        setIsLoading(true);
-        const auth = getAuth(navigate);
-        if (!auth) return;
-        const { token } = auth;
         try {
-            const response = await axios.delete(
-                `${import.meta.env.VITE_BASE_URL}/blog/${blog.id}`,
-                {
-                    headers: {
-                        Authorization: `${token}`,
-                    },
-                }
-            );
-
-            if (response.status === 200) {
-                toast.success("Blog deleted successfully!");
-                onDelete(blog.id); // Remove blog from parent state
-            } else {
-                toast.error("Failed to delete blog.");
-            }
+            // Call the onDelete prop to delete the blog in the parent component
+            onDelete(blog.id);
+            toast.success("Blog deleted successfully!");
         } catch (error) {
             console.error("Error deleting blog:", error);
             toast.error("Failed to delete blog.");
         } finally {
-            setIsLoading(false);
             setOpenDeleteDialog(false);
         }
-    }
+    };
     const handleTag = async () => {
-        setIsLoading(true);
-        const auth = getAuth(navigate);
-        if (!auth) return;
-        const { token, userId } = auth;
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_BASE_URL}/blog/tag`,
-                {
-                    blogId: blog.id,
-                    userId: userId,
-                    tagName: tag
-                },
-                {
-                    headers: {
-                        Authorization: `${token}`,
-                    },
-                }
-            );
-
-            if (response.status === 200) {
-                toast.success("Tag added successfully!");
-                fetchBlogs();
-
-            } else {
-                toast.error("Failed to delete blog.");
-            }
+            // Dispatch the action to add a tag to the blog
+            await dispatch(addTagToBlog({ blogId: blog.id, tagName: tag }));
+            toast.success("Tag added successfully!");
+            setTag(""); // Clear the tag input
         } catch (error) {
-            console.error("Error Adding tag:", error);
-            toast.error("Failed to add tag");
+            console.error("Error adding tag:", error);
+            toast.error("Failed to add tag.");
         } finally {
-            setIsLoading(false);
             setOpenTagDialog(false);
-            setTag("")
         }
-    }
+    };
     const handleDeleteTag = async () => {
-        setIsLoading(true);
-        const auth = getAuth(navigate);
-        if (!auth) return;
-        const { token, userId } = auth;
         try {
-            const response = await axios.delete(
-                `${import.meta.env.VITE_BASE_URL}/delete/tag`,
-                {
-                    data: {
-                        blogId: blog.id,
-                        userId: parseInt(userId, 10),
-                        tagName: selectedTag
-                    },
-                    headers: {
-                        Authorization: `${token}`,
-                    },
-                },
-            );
-
-            if (response.status === 200) {
-                toast.success("Tag Deleted successfully!");
-                fetchBlogs();
-
-            } else {
-                toast.error("Failed to delete Tag");
-            }
+            // Dispatch the action to remove a tag from the blog
+            await dispatch(removeTagFromBlog({ blogId: blog.id, tagName: selectedTag }));
+            toast.success("Tag deleted successfully!");
         } catch (error) {
+            console.error("Error deleting tag:", error);
+            toast.error("Failed to delete tag.");
             console.error("Error deleting tag:", error);
             toast.error("Failed to delete tag");
         } finally {
-            setIsLoading(false);
             setOpenTagDeleteDialog(false)
             setSelectedTag('')
         }
     }
     const handleSummarize = async () => {
-        setIsLoading(true);
-        const auth = getAuth(navigate);
+        const auth = getAuthFromStore();
         if (!auth) return;
         const { token } = auth;
         try {
@@ -220,10 +132,12 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
             console.error("Error summarize:", error);
             toast.error("Failed to summarize");
         } finally {
-            setIsLoading(false);
             setOpenTextDialog(false)
         }
     }
+    useEffect(() => {
+        fetchBlogs()
+    }, [handleTag, handleDeleteTag, handleStatusChange, handleDelete])
     return (
         <Card className="w-full p-1 transform transition-all duration-300 hover:shadow-lg hover:scale-105">
             <CardHeader>
@@ -343,7 +257,7 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                     <DialogHeader>
                         <DialogTitle>Add a Tag</DialogTitle>
                     </DialogHeader>
-                    <Input id="tag" value={tag} className="col-span-2" onChange={handleTagChange} />
+                    <Input id="tag" value={tag} className="col-span-2" onChange={(e) => setTag(e.target.value)} />
                     <DialogFooter>
                         <Button
                             onClick={() => setOpenTagDialog(false)} // Close modal without deleting
@@ -354,10 +268,10 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                         </Button>
                         <Button
                             onClick={handleTag} // Proceed with delete
-                            className={`bg-green-600 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            disabled={isLoading}
+                            className={`bg-green-600 ${isTagLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={isTagLoading}
                         >
-                            {isLoading ? (
+                            {isTagLoading ? (
                                 <Loader2 className="animate-spin" /> // Show loading spinner when isLoading is true
                             ) : (
                                 'Add' // Show button text when not loading
@@ -374,9 +288,9 @@ export function BlogCard({ blog, onStatusChange, onDelete, fetchBlogs }: BlogCar
                             value={selectedTag}
                             onClick={handleDeleteTag}
                             className="bg-red-600 w-1/2"
-                            disabled={isLoading}
+                            disabled={isTagLoading}
                         >
-                            {isLoading ? (
+                            {isTagLoading ? (
                                 <Loader2 className="animate-spin" /> // Show loading spinner when isLoading is true
                             ) : (
                                 'Delete' // Show button text when not loading

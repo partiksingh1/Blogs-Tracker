@@ -31,7 +31,7 @@ export const Blogs = () => {
     return (
         <div className="mx-auto max-w-screen-xl">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-center bg-gray-100 dark:bg-black rounded-xl mb-3 p-4 gap-4">
+            <div className="flex flex-col sm:flex-row items-center dark:bg-black rounded-xl mb-3 p-4 gap-4">
                 <div className="flex gap-10 flex-wrap justify-center sm:justify-between w-full">
 
                     <DropdownMenu>

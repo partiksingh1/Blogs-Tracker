@@ -1,18 +1,17 @@
-import toast from 'react-hot-toast';
-import { useNavigate } from "react-router";
-let hasShownAuthError = false;
-export const getAuth = (navigate: ReturnType<typeof useNavigate>, showError = true): { token: string; userId: string } | null => {
-    console.log("called auth");
+import { store } from '../store/store'
+import { logout } from '../store/slices/authSlice'
+import toast from 'react-hot-toast'
 
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("userId");
-    if (!token || !userId) {
-        if (showError && !hasShownAuthError) {
-            toast.error("Please Login");
-            hasShownAuthError = true;
-            navigate?.("/login");
-        }
-        return null;
+export const getAuthFromStore = () => {
+    const state = store.getState()
+    return {
+        token: state.auth.token,
+        userId: state.auth.userId,
+        isAuthenticated: state.auth.isAuthenticated
     }
-    return { token, userId };
+}
+
+export const logoutUser = () => {
+    store.dispatch(logout())
+    toast.success('Logged out successfully')
 }

@@ -1,87 +1,32 @@
-import { Blog } from "@/types/blog";
+
 import { BlogCard } from "./BlogCard";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import axios from "axios";
-import toast from 'react-hot-toast';
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card } from "./ui/card";
-import { getAuth } from "@/lib/auth";
-import { useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { deleteBlog, fetchBlogs, fetchCategories, updateBlogStatus } from "@/store/thunks";
 export const BlogList = () => {
-  const [blogs, setBlogs] = useState<Blog[]>([]);
+  console.log("0) Bloglist rendered");
+  const dispatch = useAppDispatch();
+  const { blogs, isLoading, categories } = useAppSelector((state) => state.blog);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("createdAt");
   const [filterBy, setFilterby] = useState("all");
   const [categoryBy, setCategoryBy] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
-  let navigate = useNavigate();
+  const [isSelectOpen, setIsSelectOpen] = useState(false);
 
-  const fetchCategories = async () => {
-    const auth = getAuth(navigate);
-    if (!auth) return;
-    const { token, userId } = auth;
+  const fetchData = useCallback(async () => {
+    console.log("2)inside the fetchData of first useEffect hook in bloglist ");
+    await dispatch(fetchCategories());
+    await dispatch(fetchBlogs());
+  }, [dispatch]);
 
-    try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/category/${userId}`, {
-        headers: { Authorization: `${token}` },
-      });
-      if (res.status === 200) {
-        setCategories(res.data.categories);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to fetch categories.");
-    }
-  };
-
-  // Fetch blogs from the API
-  const fetchBlogs = async () => {
-    setLoading(true);
-    const auth = getAuth(navigate);
-    if (!auth) return;
-    const { token, userId } = auth;
-
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/blogs/${userId}`, {
-        headers: {
-          Authorization: `${token}`,
-        },
-      });
-
-      if (response.status === 200) {
-        setBlogs(response.data.blogs);
-      }
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to fetch blogs.");
-    }
-    finally {
-      setLoading(false);
-    }
-  };
-
-  // Fetch blogs on component mount
   useEffect(() => {
-    fetchCategories();
-    fetchBlogs();
-  }, []);
-
-  // Handle status change for a blog
-  const handleStatusChange = (blogId: string, newStatus: boolean) => {
-    setBlogs((prevBlogs) =>
-      prevBlogs.map((blog) =>
-        blog.id === blogId ? { ...blog, isRead: newStatus } : blog
-      )
-    );
-  };
-  const handleDelete = (blogId: string) => {
-    setBlogs((prevBlogs) => prevBlogs.filter(blog => blog.id !== blogId));
-  };
-
-
+    console.log("1) first useEffect hook in bloglist ");
+    fetchData();
+  }, [fetchData]);
 
   // Filter and sort blogs based on search, filter, and sort criteria
   const filteredAndSortedBlogs = blogs
@@ -106,8 +51,10 @@ export const BlogList = () => {
       return dateB - dateA;
     });
 
-
-  if (loading) {
+  const handleSelectOpenChange = (open: boolean | ((prevState: boolean) => boolean)) => {
+    setIsSelectOpen(open);
+  };
+  if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-3 mt-20">
         {[...Array(3)].map((_, index) => (
@@ -127,7 +74,7 @@ export const BlogList = () => {
 
 
   return (
-    <div className="mx-auto max-w-screen-xl px-4">
+    <div className={`mx-auto max-w-screen-xl px-4 ${isSelectOpen ? 'blur-background' : ''}`}>
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <Input
           placeholder="Search blogs"
@@ -135,7 +82,7 @@ export const BlogList = () => {
           onChange={(e) => setSearch(e.target.value)}
           className="flex-grow"
         />
-        <Select value={sort} onValueChange={setSort}>
+        <Select value={sort} onValueChange={setSort} onOpenChange={handleSelectOpenChange}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -144,7 +91,7 @@ export const BlogList = () => {
             <SelectItem value="title">Title</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={filterBy} onValueChange={setFilterby}>
+        <Select value={filterBy} onValueChange={setFilterby} onOpenChange={handleSelectOpenChange}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by" />
           </SelectTrigger>
@@ -154,10 +101,14 @@ export const BlogList = () => {
             <SelectItem value="unread">Unread</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={categoryBy} onValueChange={(value) => {
-          console.log("Category selected:", value);  // ✅ Debug line
-          setCategoryBy(value);
-        }}>
+        <Select
+          value={categoryBy}
+          onValueChange={(value) => {
+            console.log("Category selected:", value);  // ✅ Debug line
+            setCategoryBy(value);
+          }}
+          onOpenChange={handleSelectOpenChange}
+        >
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
@@ -199,9 +150,8 @@ export const BlogList = () => {
               <BlogCard
                 key={blog.id}
                 blog={blog}
-                onStatusChange={(id, status) => handleStatusChange(id, status)} // Convert to string
-                onDelete={handleDelete} // Pass the delete handler
-                fetchBlogs={fetchBlogs}
+                onStatusChange={(id, status) => dispatch(updateBlogStatus({ blogId: id, status }))}
+                onDelete={(id) => dispatch(deleteBlog(id))}
               />
             ))
           )}

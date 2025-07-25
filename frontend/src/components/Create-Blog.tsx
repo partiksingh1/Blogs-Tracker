@@ -13,8 +13,10 @@ import { ChangeEvent, useState } from "react"
 import axios from "axios"
 import toast from 'react-hot-toast';
 import { useNavigate } from "react-router-dom"
-import { getAuth } from "@/lib/auth"
+import { getAuthFromStore } from "@/lib/auth"
 import { CategorySelect } from "./CategorySelection"
+import { createBlog } from "@/store/thunks"
+import { useAppDispatch } from "@/hooks/hooks"
 export const CreateBlog = () => {
     const [title, setTitle] = useState("")
     const [url, setUrl] = useState("")
@@ -22,6 +24,7 @@ export const CreateBlog = () => {
     const [isRead, setIsRead] = useState(false)
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const dispatch = useAppDispatch();
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(e.target.value)
@@ -40,46 +43,35 @@ export const CreateBlog = () => {
         setIsRead(e.target.value === "true")
     }
     const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-
-        const auth = getAuth(navigate);
-        if (!auth) return;
-        const { token, userId } = auth;
-        e.preventDefault()
-        console.log("form data is ", title, url, category, isRead);
+        e.preventDefault();
+        setLoading(true);
         try {
-            const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/blog`, {
+            const action = await dispatch(createBlog({
                 title,
                 url,
                 categoryName: category.toLowerCase(),
                 isRead,
-                userId: userId
-            }, {
-                headers: {
-                    "Authorization": `${token}`
-                }
-            })
-            if (response.status == 201) {
-                toast.success("Blog added successfully!")
-                setTitle("")
-                setUrl("")
-                setCategory("")
+            }));
+            if (createBlog.fulfilled.match(action)) {
+                toast.success("Blog added successfully!");
+                setTitle("");
+                setUrl("");
+                setCategory("");
                 navigate(0);
             } else {
-                toast.error("Error adding Blog :(")
+                toast.error(action.payload as string || "Error adding Blog :(");
             }
         } catch (error) {
-            console.error("Error adding blog:", error); // Log the actual error
-            toast.error("Error adding Blog :(")
+            console.error("Error adding blog:", error);
+            toast.error("Error adding Blog :(");
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const fetchBlogInfo = async (inputUrl: string) => {
 
-        const auth = getAuth(navigate);
+        const auth = getAuthFromStore();
         if (!auth) return;
         const { token } = auth;
         try {
@@ -141,7 +133,7 @@ export const CreateBlog = () => {
                             <Label htmlFor="category" className="text-right">
                                 Category
                             </Label>
-                            <CategorySelect />
+                            <CategorySelect onChange={setCategory} />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
                             <Label htmlFor="category" className="text-right">
