@@ -41,9 +41,22 @@ export const Signup = async (req: Request, res: Response) => {
             }
         })
         if (user) {
+            const token = jwt.sign(
+                {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email
+                },
+                `${process.env.JWT_SECRET}`
+            )
             res.status(201).json({
                 message: "user successfully created",
-                user
+                token,
+                user: {
+                    id: user.id,
+                    username: user.username,
+                    email: user.email
+                }
             })
         }
     } catch (error) {
