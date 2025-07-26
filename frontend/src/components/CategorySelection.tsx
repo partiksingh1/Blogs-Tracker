@@ -52,6 +52,7 @@ export const CategorySelect = ({ onChange }: CategorySelectProps) => {
         toast.error(action.payload as string || "Failed to create category");
       }
     } catch (err) {
+      console.error(err)
       toast.error("Category already exists or failed to create");
     }
   };

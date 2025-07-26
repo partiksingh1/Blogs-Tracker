@@ -40,9 +40,10 @@ export const fetchBlogs = createAsyncThunk(
                 },
             });
             return response.data.blogs || []
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to fetch blogs'
+                'Failed to fetch blogs'
             )
         }
     }
@@ -65,9 +66,10 @@ export const createBlog = createAsyncThunk(
                 },
             });
             return response.data.blogs || []
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to fetch blogs'
+                'Failed to fetch blogs'
             )
         }
     }
@@ -92,9 +94,10 @@ export const updateBlogStatus = createAsyncThunk(
             });
 
             return response.data.blogStatus
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to update blog status'
+                'Failed to update blog status'
             )
         }
     }
@@ -116,9 +119,10 @@ export const deleteBlog = createAsyncThunk(
                 }
             )
             return blogId
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to delete blog'
+                'Failed to delete blog'
             )
         }
     }
@@ -143,9 +147,10 @@ export const fetchCategories = createAsyncThunk(
                 }
             )
             return response.data.categories || []
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to fetch categories'
+                'Failed to fetch categories'
             )
         }
     }
@@ -170,9 +175,10 @@ export const createCategory = createAsyncThunk(
             )
 
             return response.data.category
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to create category'
+                'Failed to create category'
             )
         }
     }
@@ -197,9 +203,10 @@ export const deleteCategory = createAsyncThunk(
             )
 
             return { categoryName, deletedCategory: response.data.category }
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to delete category'
+                'Failed to delete category'
             )
         }
     }
@@ -229,9 +236,10 @@ export const addTagToBlog = createAsyncThunk(
                 blog: response.data.blog,
                 tag: response.data.tag
             }
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to add tag to blog'
+                'Failed to add tag to blog'
             )
         }
     }
@@ -256,9 +264,10 @@ export const removeTagFromBlog = createAsyncThunk(
             )
 
             return { blogId, tagName }
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             return rejectWithValue(
-                error.response?.data?.message || 'Failed to remove tag from blog'
+                'Failed to remove tag from blog'
             )
         }
     }

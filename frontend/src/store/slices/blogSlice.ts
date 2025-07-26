@@ -103,13 +103,13 @@ const BlogSlice = createSlice({
     reducers: {
         //filter actions
         setSelectedCategories: (state, action: PayloadAction<string[]>) => {
-            state.selectedCategories = action.payload,
-                state.filteredBlogs = applyFilters(state.blogs, {
-                    selectedCategories: action.payload,
-                    selectedTags: state.selectedTags,
-                    searchQuery: state.searchQuery,
-                    showOnlyUnread: state.showOnlyUnread
-                })
+            state.selectedCategories = action.payload
+            state.filteredBlogs = applyFilters(state.blogs, {
+                selectedCategories: action.payload,
+                selectedTags: state.selectedTags,
+                searchQuery: state.searchQuery,
+                showOnlyUnread: state.showOnlyUnread
+            })
         },
         setSelectedTags: (state, action: PayloadAction<string[]>) => {
             state.selectedTags = action.payload
@@ -157,14 +157,14 @@ const BlogSlice = createSlice({
     extraReducers(builder) {
         builder
             .addCase(fetchBlogs.fulfilled, (state, action) => {
-                state.isLoading = false,
-                    state.blogs = action.payload,
-                    state.filteredBlogs = applyFilters(action.payload, {
-                        selectedCategories: state.selectedCategories,
-                        selectedTags: state.selectedTags,
-                        searchQuery: state.searchQuery,
-                        showOnlyUnread: state.showOnlyUnread
-                    })
+                state.isLoading = false
+                state.blogs = action.payload
+                state.filteredBlogs = applyFilters(action.payload, {
+                    selectedCategories: state.selectedCategories,
+                    selectedTags: state.selectedTags,
+                    searchQuery: state.searchQuery,
+                    showOnlyUnread: state.showOnlyUnread
+                })
                 state.error = null
             })
             .addCase(fetchBlogs.rejected, (state, action) => {

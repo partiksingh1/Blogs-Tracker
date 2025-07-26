@@ -13,7 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import axios from "axios";
 import { getAuthFromStore } from "@/lib/auth";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -52,21 +52,25 @@ export function BlogCard({ blog, onStatusChange, onDelete }: BlogCardProps) {
     const [aiText, setAiText] = useState("")
     const [openTagDeleteDialog, setOpenTagDeleteDialog] = useState(false)
     const { isLoading, isTagLoading } = useAppSelector(state => state.blog)
-    const handleStatusChange = async (newStatus: string) => {
+    const blogId = blog.id;
+    const handleStatusChange = useCallback(
+        async (newStatus: string) => {
+            try {
+                // Call the onStatusChange prop to update the status in the parent component
+                onStatusChange(blog.id, newStatus === "READ");
+                setStatus(newStatus);
+                toast.success("Status updated successfully!");
+            } catch (error) {
+                console.error("Error updating status:", error);
+                toast.error("Failed to update status.");
+            }
+        },
+        [onStatusChange, blog.id]
+    );
+
+    const handleDelete = useCallback(async () => {
         try {
-            // Call the onStatusChange prop to update the status in the parent component
-            onStatusChange(blog.id, newStatus === "READ");
-            setStatus(newStatus);
-            toast.success("Status updated successfully!");
-        } catch (error) {
-            console.error("Error updating status:", error);
-            toast.error("Failed to update status.");
-        }
-    };
-    const handleDelete = async () => {
-        try {
-            // Call the onDelete prop to delete the blog in the parent component
-            onDelete(blog.id);
+            onDelete(blogId);
             toast.success("Blog deleted successfully!");
         } catch (error) {
             console.error("Error deleting blog:", error);
@@ -74,11 +78,12 @@ export function BlogCard({ blog, onStatusChange, onDelete }: BlogCardProps) {
         } finally {
             setOpenDeleteDialog(false);
         }
-    };
-    const handleTag = async () => {
+    }, [onDelete, blogId]);
+
+    // Add tag
+    const handleTag = useCallback(async () => {
         try {
-            // Dispatch the action to add a tag to the blog
-            await dispatch(addTagToBlog({ blogId: blog.id, tagName: tag }));
+            await dispatch(addTagToBlog({ blogId, tagName: tag }));
             toast.success("Tag added successfully!");
             setTag(""); // Clear the tag input
         } catch (error) {
@@ -87,22 +92,21 @@ export function BlogCard({ blog, onStatusChange, onDelete }: BlogCardProps) {
         } finally {
             setOpenTagDialog(false);
         }
-    };
-    const handleDeleteTag = async () => {
+    }, [dispatch, blogId, tag]);
+
+    // Delete tag
+    const handleDeleteTag = useCallback(async () => {
         try {
-            // Dispatch the action to remove a tag from the blog
-            await dispatch(removeTagFromBlog({ blogId: blog.id, tagName: selectedTag }));
+            await dispatch(removeTagFromBlog({ blogId, tagName: selectedTag }));
             toast.success("Tag deleted successfully!");
         } catch (error) {
             console.error("Error deleting tag:", error);
             toast.error("Failed to delete tag.");
-            console.error("Error deleting tag:", error);
-            toast.error("Failed to delete tag");
         } finally {
-            setOpenTagDeleteDialog(false)
-            setSelectedTag('')
+            setOpenTagDeleteDialog(false);
+            setSelectedTag('');
         }
-    }
+    }, [dispatch, blogId, selectedTag]);
     const handleSummarize = async () => {
         const auth = getAuthFromStore();
         if (!auth) return;

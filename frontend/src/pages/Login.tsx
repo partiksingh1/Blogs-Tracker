@@ -46,7 +46,7 @@ export const Login = () => {
       await dispatch(forgotPassword(forgetEmail)).unwrap()
       toast.success('Please chidck your mail!')
       navigate('/login')
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error || 'Password resetting failed')
     }
   }
@@ -63,7 +63,7 @@ export const Login = () => {
       await dispatch(loginUser(data)).unwrap()
       toast.success('Login successful!')
       navigate('/blogs')
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error || 'Login failed')
     }
   }

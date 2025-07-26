@@ -30,9 +30,10 @@ export const loginUser = createAsyncThunk(
                 dispatch(loginFailure())
                 return rejectWithValue('Invalid response format')
             }
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             dispatch(loginFailure())
-            return rejectWithValue(error.response?.data?.message || 'Login failed')
+            return rejectWithValue('Login failed')
         }
     }
 )
@@ -52,9 +53,10 @@ export const forgotPassword = createAsyncThunk(
                 dispatch(loginFailure())
                 return rejectWithValue('Failed to send reset email')
             }
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             dispatch(loginFailure())
-            return rejectWithValue(error.response?.data?.message || 'Forgot password failed')
+            return rejectWithValue('Forgot password failed')
         }
     }
 )
@@ -77,9 +79,10 @@ export const signupUser = createAsyncThunk(
                 dispatch(loginFailure())
                 return rejectWithValue('Invalid response format')
             }
-        } catch (error: any) {
+        } catch (error) {
+            console.error(error);
             dispatch(loginFailure())
-            return rejectWithValue(error.response?.data?.message || 'Signup failed')
+            return rejectWithValue('Signup failed')
         }
     }
 )

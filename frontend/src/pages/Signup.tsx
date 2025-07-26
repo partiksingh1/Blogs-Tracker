@@ -65,7 +65,7 @@ export const Signup = () => {
       await dispatch(signupUser(userData)).unwrap()
       toast.success('Signup successful!')
       navigate('/blogs')
-    } catch (error: any) {
+    } catch (error) {
       toast.error(error || 'Signup failed')
     }
   }

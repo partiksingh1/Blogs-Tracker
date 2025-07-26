@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useEffect, useState } from "react"
 
 type Theme = "dark" | "light" | "system"
 
@@ -36,8 +36,7 @@ export function ThemeProvider({
     root.classList.remove("light", "dark")
 
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: light)")
-        .matches
+      const systemTheme = window.matchMedia("(prefers-color-scheme: light)").matches
         ? "light"
         : "dark"
 
@@ -63,11 +62,5 @@ export function ThemeProvider({
   )
 }
 
-export const useTheme = () => {
-  const context = useContext(ThemeProviderContext)
-
-  if (context === undefined)
-    throw new Error("useTheme must be used within a ThemeProvider")
-
-  return context
-}
+// Export context to be used in useTheme file
+export { ThemeProviderContext }

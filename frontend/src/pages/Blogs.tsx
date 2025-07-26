@@ -30,7 +30,7 @@ export const Blogs = () => {
             navigate('/')
         }
         toast.error("Please Login/register")
-    }, [isAuthenticated])
+    }, [isAuthenticated, navigate])
 
     const [showIntro, setShowIntro] = useState(true);
     const handleIntroClose = () => {
