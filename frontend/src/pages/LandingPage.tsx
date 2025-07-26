@@ -15,7 +15,7 @@ export const LandingPage = () => {
 
     return (
         <div className="m-0 p-0 box-border font-normal bg-gradient-to-b from-white via-blue-100 to-white min-h-screen w-full">
-            <div className="max-w-full p-8 mx-auto relative border-2 border-black">
+            <div className="max-w-full p-8 mx-auto relative">
                 {/* Header Section */}
                 <div className="flex items-center justify-between flex-col sm:flex-row">
                     <div className="text-4xl font-bold">
@@ -31,7 +31,7 @@ export const LandingPage = () => {
                                 {link.title}
                             </a>
                         ))}
-                        <button className="mt-4 sm:mt-0 p-4 bg-blue-600 text-white shadow-md rounded-xl text-2xl">Get Started</button>
+                        <button onClick={() => navigate("login")} className="mt-4 sm:mt-0 p-4 bg-blue-600 text-white shadow-md rounded-xl text-2xl">Get Started</button>
                     </div>
                 </div>
 
@@ -58,36 +58,36 @@ export const LandingPage = () => {
                 </div>
 
                 {/* Features Section */}
-                <div className="mt-12">
-                    <h1 className="text-4xl sm:text-5xl mt-8 font-bold text-center">See How Easy It Is</h1>
+                <div className="-mt-12">
+                    <h1 className="text-4xl sm:text-5xl font-bold text-center">See How Easy It Is</h1>
 
                     {/* Feature 1 */}
-                    <div className="flex flex-col sm:flex-row mt-12 gap-8 items-center justify-center">
+                    <div className="flex flex-col sm:flex-row mt-16 gap-8 items-center justify-center">
                         <h2 className="text-2xl sm:text-3xl text-center w-full sm:w-1/2">
                             Create your account in 30 seconds
                         </h2>
-                        <img className="w-full sm:w-1/2 opacity-45" src="/c1.png" alt="Feature Image" />
+                        <img className="w-full sm:w-1/2 opacity-45 rounded-xl" src="/c1.png" alt="Feature Image" />
                     </div>
 
                     {/* Feature 2 */}
-                    <div className="flex flex-col sm:flex-row mt-12 gap-8 items-center justify-center">
-                        <img className="w-full sm:w-1/2 opacity-45" src="/hero.png" alt="Feature Image" />
+                    <div className="flex flex-col sm:flex-row gap-8 items-center justify-center">
+                        <img className="w-full sm:w-1/2 opacity-45 rounded-xl" src="/hero.png" alt="Feature Image" />
                         <h2 className="text-2xl sm:text-3xl text-center w-full sm:w-1/2">
                             Your Dashboard Awaits <br /> See all your blogs organized beautifully
                         </h2>
                     </div>
 
                     {/* Feature 3 */}
-                    <div className="flex flex-col sm:flex-row mt-12 gap-8 items-center justify-center">
+                    <div className="flex flex-col sm:flex-row gap-8 items-center justify-center">
                         <h2 className="text-2xl sm:text-3xl text-center w-full sm:w-1/2">
                             Create & Organize <br />Write and categorize posts effortlessly
                         </h2>
-                        <img className="w-full sm:w-1/2 opacity-45 h-auto" src="/c3.png" alt="Feature Image" />
+                        <img className="w-full sm:w-1/2 opacity-45 h-auto rounded-xl" src="/c3.png" alt="Feature Image" />
                     </div>
 
                     {/* Feature 4 */}
-                    <div className="flex flex-col sm:flex-row mt-12 gap-8 items-center justify-center">
-                        <img className="w-full sm:w-1/2 opacity-45 h-auto" src="/c2.png" alt="Feature Image" />
+                    <div className="flex flex-col sm:flex-row gap-8 items-center justify-center">
+                        <img className="w-full sm:w-1/2 opacity-45 h-auto rounded-xl" src="/c2.png" alt="Feature Image" />
                         <h2 className="text-2xl sm:text-3xl text-center w-full sm:w-1/2">
                             Smart Features at Work <br />Get instant insights with AI-powered summaries
                         </h2>

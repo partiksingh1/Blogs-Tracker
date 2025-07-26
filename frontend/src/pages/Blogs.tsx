@@ -11,9 +11,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { useAppDispatch } from "@/hooks/hooks"
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks"
 import { logout } from "@/store/slices/authSlice"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import toast from "react-hot-toast"
 import { useNavigate } from "react-router-dom"
 
 export const Blogs = () => {
@@ -23,6 +24,13 @@ export const Blogs = () => {
         dispatch(logout());
         navigate("/login");
     };
+    const { isAuthenticated } = useAppSelector(state => state.auth)
+    useEffect(() => {
+        if (!isAuthenticated) {
+            navigate('/')
+        }
+        toast.error("Please Login/register")
+    }, [isAuthenticated])
 
     const [showIntro, setShowIntro] = useState(true);
     const handleIntroClose = () => {
