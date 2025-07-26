@@ -11,16 +11,16 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useAppDispatch } from "@/hooks/hooks"
+import { logout } from "@/store/slices/authSlice"
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 export const Blogs = () => {
     const navigate = useNavigate();
-
+    const dispatch = useAppDispatch()
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("username");
-        localStorage.removeItem("userId");
+        dispatch(logout());
         navigate("/login");
     };
 
