@@ -1,8 +1,7 @@
-import { BlogList } from "@/components/BlogList"
-import { CreateBlog } from "@/components/Create-Blog"
-import { ModeToggle } from "@/components/mode-toggle"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-
+import { BlogList } from "@/components/BlogList";
+import { CreateBlog } from "@/components/Create-Blog";
+import { ModeToggle } from "@/components/mode-toggle";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,42 +9,43 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks"
-import { logout } from "@/store/slices/authSlice"
-import { useEffect, useState } from "react"
-import toast from "react-hot-toast"
-import { useNavigate } from "react-router-dom"
+} from "@/components/ui/dropdown-menu";
+import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
+import { logout } from "@/store/slices/authSlice";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export const Blogs = () => {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch()
+    const dispatch = useAppDispatch();
+    const { isAuthenticated } = useAppSelector((state) => state.auth);
+
+    const [showIntro, setShowIntro] = useState(true);
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            toast.error("Please Login/register");
+            navigate("/");
+        }
+    }, [isAuthenticated, navigate]);
+
     const handleLogout = () => {
         dispatch(logout());
         navigate("/login");
     };
-    const { isAuthenticated } = useAppSelector(state => state.auth)
-    useEffect(() => {
-        if (!isAuthenticated) {
-            navigate('/')
-        }
-        toast.error("Please Login/register")
-    }, [isAuthenticated, navigate])
 
-    const [showIntro, setShowIntro] = useState(true);
-    const handleIntroClose = () => {
-        setShowIntro(false);
-    };
+    const handleIntroClose = () => setShowIntro(false);
+
     return (
         <div className="mx-auto max-w-screen-xl">
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-center dark:bg-black rounded-xl mb-3 p-4 gap-4">
                 <div className="flex gap-10 flex-wrap justify-center sm:justify-between w-full">
-
                     <DropdownMenu>
                         <DropdownMenuTrigger>
                             <Avatar>
-                                <AvatarImage src="https://github.com/shadcn.png" />
+                                <AvatarImage src="https://github.com/shadcn.png" alt="User avatar" />
                                 <AvatarFallback>CN</AvatarFallback>
                             </Avatar>
                         </DropdownMenuTrigger>
@@ -67,13 +67,19 @@ export const Blogs = () => {
 
             {/* Intro Message */}
             {showIntro && (
-                <div className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 px-4 py-3 sm:py-4 text-sm sm:text-base text-center flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 shadow-md z-50">
+                <div
+                    className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 px-4 py-3 sm:py-4 text-sm sm:text-base text-center flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 shadow-md z-50"
+                    role="region"
+                    aria-label="Intro message"
+                >
                     <p className="text-gray-800 dark:text-gray-200">
                         Welcome! To add a new blog/article, click the "Add Blog" button on the top-right.
                     </p>
                     <button
                         onClick={handleIntroClose}
-                        className="bg-black dark:bg-white text-white dark:text-black px-3 py-1 rounded-md text-sm">
+                        className="bg-black dark:bg-white text-white dark:text-black px-3 py-1 rounded-md text-sm"
+                        aria-label="Dismiss intro message"
+                    >
                         Got it
                     </button>
                 </div>
