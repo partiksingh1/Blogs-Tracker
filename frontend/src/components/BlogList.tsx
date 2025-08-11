@@ -1,59 +1,55 @@
-
 import { BlogCard } from "./BlogCard";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Input } from "./ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Skeleton } from "@/components/ui/skeleton"
+import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "./ui/card";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { deleteBlog, fetchBlogs, fetchCategories, updateBlogStatus } from "@/store/thunks";
+
 export const BlogList = () => {
-  console.log("0) Bloglist rendered");
   const dispatch = useAppDispatch();
   const { blogs, isLoading, categories } = useAppSelector((state) => state.blog);
+
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("createdAt");
   const [filterBy, setFilterby] = useState("all");
-  const [categoryBy, setCategoryBy] = useState("");
+  const [categoryBy, setCategoryBy] = useState("all");
   const [isSelectOpen, setIsSelectOpen] = useState(false);
 
-  const fetchData = useCallback(async () => {
-    console.log("2)inside the fetchData of first useEffect hook in bloglist ");
-    await dispatch(fetchCategories());
-    await dispatch(fetchBlogs());
+  // Fetch categories and blogs in parallel on mount
+  useEffect(() => {
+    dispatch(fetchCategories());
+    dispatch(fetchBlogs());
   }, [dispatch]);
 
-  useEffect(() => {
-    console.log("1) first useEffect hook in bloglist ");
-    fetchData();
-  }, [fetchData]);
-
-  // Filter and sort blogs based on search, filter, and sort criteria
-  const filteredAndSortedBlogs = blogs
-    .filter((blog) => {
-      if (filterBy === "read") return blog.isRead;
-      if (filterBy === "unread") return !blog.isRead;
-      return true;
-    })
-    .filter((blog) => blog.title?.toLowerCase().includes(search.toLowerCase()))
-    .filter((blog) => {
-      if (!categoryBy || categoryBy === "all") return true;
-
-      return blog.categories?.some(
-        (cat) => cat.name.toLowerCase().trim() === categoryBy.trim().toLowerCase()
-      );
-    })
-
-    .sort((a, b) => {
-      if (sort === "title") return (a.title || "").localeCompare(b.title || "");
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
-      return dateB - dateA;
-    });
+  // Memoize filtered and sorted blogs to avoid unnecessary recalculations
+  const filteredAndSortedBlogs = useMemo(() => {
+    return blogs
+      .filter((blog) => {
+        if (filterBy === "read") return blog.isRead;
+        if (filterBy === "unread") return !blog.isRead;
+        return true;
+      })
+      .filter((blog) => blog.title?.toLowerCase().includes(search.toLowerCase()))
+      .filter((blog) => {
+        if (!categoryBy || categoryBy === "all") return true;
+        return blog.categories?.some(
+          (cat) => cat.name.toLowerCase().trim() === categoryBy.trim().toLowerCase()
+        );
+      })
+      .sort((a, b) => {
+        if (sort === "title") return (a.title || "").localeCompare(b.title || "");
+        const dateA = new Date(a.createdAt).getTime();
+        const dateB = new Date(b.createdAt).getTime();
+        return dateB - dateA;
+      });
+  }, [blogs, filterBy, search, categoryBy, sort]);
 
   const handleSelectOpenChange = (open: boolean | ((prevState: boolean) => boolean)) => {
     setIsSelectOpen(open);
   };
+
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-3 mt-20">
@@ -71,18 +67,22 @@ export const BlogList = () => {
     );
   }
 
-
-
   return (
-    <div className={`mx-auto max-w-screen-xl px-4 ${isSelectOpen ? 'blur-background' : ''}`}>
+    <div className={`mx-auto max-w-screen-xl px-4 ${isSelectOpen ? "blur-background" : ""}`}>
       <div className="flex flex-col sm:flex-row gap-4 mb-4">
         <Input
           placeholder="Search blogs"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-grow"
+          aria-label="Search blogs"
         />
-        <Select value={sort} onValueChange={setSort} onOpenChange={handleSelectOpenChange}>
+        <Select
+          value={sort}
+          onValueChange={setSort}
+          onOpenChange={handleSelectOpenChange}
+          aria-label="Sort blogs"
+        >
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -91,7 +91,12 @@ export const BlogList = () => {
             <SelectItem value="title">Title</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={filterBy} onValueChange={setFilterby} onOpenChange={handleSelectOpenChange}>
+        <Select
+          value={filterBy}
+          onValueChange={setFilterby}
+          onOpenChange={handleSelectOpenChange}
+          aria-label="Filter blogs by read status"
+        >
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by" />
           </SelectTrigger>
@@ -103,11 +108,9 @@ export const BlogList = () => {
         </Select>
         <Select
           value={categoryBy}
-          onValueChange={(value) => {
-            console.log("Category selected:", value);  // ✅ Debug line
-            setCategoryBy(value);
-          }}
+          onValueChange={setCategoryBy}
           onOpenChange={handleSelectOpenChange}
+          aria-label="Filter blogs by category"
         >
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Category" />
@@ -116,7 +119,6 @@ export const BlogList = () => {
             <SelectItem value="all">All</SelectItem>
             {categories
               .filter((cat) => typeof cat.name === "string" && cat.name.trim() !== "")
-              .filter((cat) => cat.name.trim().length > 0) // ensure no empty string values
               .map((cat) => {
                 const trimmedName = cat.name.trim();
                 return (
@@ -126,25 +128,22 @@ export const BlogList = () => {
                 );
               })}
           </SelectContent>
-
         </Select>
-
-
       </div>
+
       <div className="w-full flex flex-col justify-center items-center sm:flex-row gap-4">
         <div className="w-full grid gap-6 md:grid-cols-3 lg:grid-cols-3">
-          {blogs.length === 0 ? (
+          {filteredAndSortedBlogs.length === 0 ? (
             <Card className="p-6 shadow-lg rounded-xl">
               <div className="flex flex-col items-center justify-center text-center space-y-6">
                 <h1 className="text-3xl font-semibold text-gray-800">
-                  Start your journey by adding content
+                  No blogs found
                 </h1>
                 <p className="text-lg text-gray-600">
-                  It’s easy to begin. Just add a few blogs to get started with your content journey.
+                  Try adjusting your filters or add new blogs to get started.
                 </p>
               </div>
             </Card>
-
           ) : (
             filteredAndSortedBlogs.map((blog) => (
               <BlogCard

@@ -2,7 +2,7 @@ import { Route, Routes } from "react-router-dom"
 import { Login } from "./pages/Login"
 import './App.css'
 import { Signup } from "./pages/Signup"
-import { Blogs } from "./pages/Blogs"
+import { Blogs } from "./pages/Dashboard"
 import { Toaster } from 'react-hot-toast';
 import LandingPage from "./pages/LandingPage"
 
