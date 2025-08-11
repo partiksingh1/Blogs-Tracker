@@ -4,7 +4,7 @@ import './App.css'
 import { Signup } from "./pages/Signup"
 import { Blogs } from "./pages/Blogs"
 import { Toaster } from 'react-hot-toast';
-import { LandingPage } from "./pages/LandingPage"
+import LandingPage from "./pages/LandingPage"
 
 function App() {
 
@@ -15,7 +15,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path='/blogs' element={<Blogs />} />
+        <Route path='/dashboard' element={<Blogs />} />
       </Routes>
     </>
   )
