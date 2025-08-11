@@ -1,6 +1,6 @@
+import { CreateBlog } from "@/components/AddBlog";
 import { BlogList } from "@/components/BlogList";
-import { CreateBlog } from "@/components/Create-Blog";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/ToggleTheme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     DropdownMenu,
