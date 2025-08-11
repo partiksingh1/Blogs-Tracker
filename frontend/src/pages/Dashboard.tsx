@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { logout } from "@/store/slices/authSlice";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -20,8 +20,6 @@ export const Blogs = () => {
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
     const { isAuthenticated } = useAppSelector((state) => state.auth);
-
-    const [showIntro, setShowIntro] = useState(true);
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -34,8 +32,6 @@ export const Blogs = () => {
         dispatch(logout());
         navigate("/login");
     };
-
-    const handleIntroClose = () => setShowIntro(false);
 
     return (
         <div className="mx-auto max-w-screen-xl">
@@ -64,26 +60,6 @@ export const Blogs = () => {
 
             {/* Blog List */}
             <BlogList />
-
-            {/* Intro Message */}
-            {showIntro && (
-                <div
-                    className="fixed bottom-0 left-0 right-0 bg-white/90 dark:bg-black/90 px-4 py-3 sm:py-4 text-sm sm:text-base text-center flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-4 shadow-md z-50"
-                    role="region"
-                    aria-label="Intro message"
-                >
-                    <p className="text-gray-800 dark:text-gray-200">
-                        Welcome! To add a new blog/article, click the "Add Blog" button on the top-right.
-                    </p>
-                    <button
-                        onClick={handleIntroClose}
-                        className="bg-black dark:bg-white text-white dark:text-black px-3 py-1 rounded-md text-sm"
-                        aria-label="Dismiss intro message"
-                    >
-                        Got it
-                    </button>
-                </div>
-            )}
         </div>
     );
 };
