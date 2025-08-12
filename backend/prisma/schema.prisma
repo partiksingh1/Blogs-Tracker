@@ -16,25 +16,35 @@ model User {
   bio        String?
   blogs      Blog[]
   notes      Note[]
-  tags       Tag[]
-  categories Category[]
   resetToken String?    @unique
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now())
+  Category   Category[]
+  Tag        Tag[]
+
+  @@index([email])
 }
 
 model Blog {
-  id         String     @id @default(uuid())
-  userId     String
-  url        String
-  title      String?
-  isRead     Boolean    @default(false)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @default(now())
-  user       User       @relation(fields: [userId], references: [id])
-  notes      Note[]
-  categories Category[] @relation("BlogCategories")
-  tags       Tag[]      @relation("BlogTags")
+  id            String   @id @default(uuid())
+  userId        String
+  url           String
+  title         String?
+  isRead        Boolean  @default(false)
+  // Denormalized fields - store as JSON for better performance
+  tagIds        String[] @default([]) // Array of tag IDs
+  categoryName  String?
+  tagNames      String[] @default([]) // Denormalized for quick filtering
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+  notes         Note[]
+
+  // Optimized indexes
+  @@index([userId, createdAt])
+  @@index([userId, isRead])
+  @@index([userId, categoryName])
+  @@index([userId, tagNames])
 }
 
 model Category {
@@ -43,21 +53,21 @@ model Category {
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
-  blogs     Blog[]   @relation("BlogCategories")
   user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, name])
+  @@index([userId])
 }
 
 model Tag {
   id        String   @id @default(uuid())
   userId    String
   name      String
-  user      User     @relation(fields: [userId], references: [id])
-  blogs     Blog[]   @relation("BlogTags")
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, name])
+  @@index([userId])
 }
 
 model Note {
@@ -67,4 +77,7 @@ model Note {
   text   String
   blog   Blog   @relation(fields: [blogId], references: [id])
   user   User   @relation(fields: [userId], references: [id])
+
+  @@index([blogId])
+  @@index([userId])
 }

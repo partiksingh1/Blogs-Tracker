@@ -1,18 +1,39 @@
-import express from "express";
-import { AddBlog, CreateCategory, JoinTags, DeleteBlogById, DeleteCategory, EditBlogById, GetBlogByid, GetBlogs, DeleteTags, GetCategory, } from "../controller/blogController.js";
+import { Router } from "express";
+import { AddBlog, AddTagToBlog, DeleteBlog, GetDashboardData, UpdateBlogStatus } from "../controller/blogController.js";
 import { Auth } from "../middleware/middleware.js";
-
-export const blogRouter = express.Router();
-
-blogRouter.post("/blog",Auth,AddBlog);
-blogRouter.get("/blogs/:userId",Auth,GetBlogs);
-blogRouter.get("/blog/:blogId",Auth,GetBlogByid);
-blogRouter.post("/category",Auth,CreateCategory);
-blogRouter.get("/category/:userId",Auth,GetCategory);
-blogRouter.delete("/category",Auth,DeleteCategory);
-blogRouter.put("/blog/:blogId",Auth,EditBlogById);
-blogRouter.delete("/blog/:blogId",Auth,DeleteBlogById);
-blogRouter.post("/blog/tag",Auth,JoinTags);
-blogRouter.delete("/delete/tag",Auth,DeleteTags);
+import { CreateCategory, CreateTag, DeleteCategory, DeleteTag, GetCategories, GetTags, UpdateCategory, UpdateTag } from "../controller/categoryTagController.js";
 
 
+const router = Router();
+
+// Dashboard - get blogs, categories, tags, stats
+router.get("/dashboard/:userId", Auth, GetDashboardData);
+
+// Add a new blog
+router.post("/add", Auth, AddBlog);
+
+// Update blog read/unread status
+router.patch("/status/:blogId", Auth, UpdateBlogStatus);
+
+// Delete a blog
+router.delete("/:blogId", Auth, DeleteBlog);
+
+// Add a tag to a blog
+router.post("/add-tag", Auth, AddTagToBlog);
+
+/**
+ * CATEGORY ROUTES
+ */
+router.post("/categories", Auth, CreateCategory);
+router.get("/categories/:userId", Auth, GetCategories);
+router.patch("/categories/:categoryId", Auth, UpdateCategory);
+router.delete("/categories/:categoryId", Auth, DeleteCategory);
+
+/**
+ * TAG ROUTES
+ */
+router.get("/tags/:userId", Auth, GetTags);
+router.patch("/tags/:tagId", Auth, UpdateTag);
+router.delete("/tags/:tagId", Auth, DeleteTag);
+
+export default router;

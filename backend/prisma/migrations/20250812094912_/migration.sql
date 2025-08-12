@@ -1,6 +1,6 @@
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
+    "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "password" TEXT NOT NULL,
@@ -15,11 +15,15 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Blog" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "url" TEXT NOT NULL,
     "title" TEXT,
     "isRead" BOOLEAN NOT NULL DEFAULT false,
+    "categoryIds" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "tagIds" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "categoryNames" TEXT[] DEFAULT ARRAY[]::TEXT[],
+    "tagNames" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -28,8 +32,8 @@ CREATE TABLE "Blog" (
 
 -- CreateTable
 CREATE TABLE "Category" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -39,8 +43,8 @@ CREATE TABLE "Category" (
 
 -- CreateTable
 CREATE TABLE "Tag" (
-    "id" SERIAL NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -49,28 +53,12 @@ CREATE TABLE "Tag" (
 
 -- CreateTable
 CREATE TABLE "Note" (
-    "id" SERIAL NOT NULL,
-    "blogId" INTEGER NOT NULL,
-    "userId" INTEGER NOT NULL,
+    "id" TEXT NOT NULL,
+    "blogId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     "text" TEXT NOT NULL,
 
     CONSTRAINT "Note_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "_BlogCategories" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL,
-
-    CONSTRAINT "_BlogCategories_AB_pkey" PRIMARY KEY ("A","B")
-);
-
--- CreateTable
-CREATE TABLE "_BlogTags" (
-    "A" INTEGER NOT NULL,
-    "B" INTEGER NOT NULL,
-
-    CONSTRAINT "_BlogTags_AB_pkey" PRIMARY KEY ("A","B")
 );
 
 -- CreateIndex
@@ -80,19 +68,43 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX "User_resetToken_key" ON "User"("resetToken");
 
 -- CreateIndex
+CREATE INDEX "User_email_idx" ON "User"("email");
+
+-- CreateIndex
+CREATE INDEX "Blog_userId_createdAt_idx" ON "Blog"("userId", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "Blog_userId_isRead_idx" ON "Blog"("userId", "isRead");
+
+-- CreateIndex
+CREATE INDEX "Blog_userId_categoryNames_idx" ON "Blog"("userId", "categoryNames");
+
+-- CreateIndex
+CREATE INDEX "Blog_userId_tagNames_idx" ON "Blog"("userId", "tagNames");
+
+-- CreateIndex
+CREATE INDEX "Category_userId_idx" ON "Category"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Category_userId_name_key" ON "Category"("userId", "name");
+
+-- CreateIndex
+CREATE INDEX "Tag_userId_idx" ON "Tag"("userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Tag_userId_name_key" ON "Tag"("userId", "name");
 
 -- CreateIndex
-CREATE INDEX "_BlogCategories_B_index" ON "_BlogCategories"("B");
+CREATE INDEX "Note_blogId_idx" ON "Note"("blogId");
 
 -- CreateIndex
-CREATE INDEX "_BlogTags_B_index" ON "_BlogTags"("B");
+CREATE INDEX "Note_userId_idx" ON "Note"("userId");
 
 -- AddForeignKey
 ALTER TABLE "Blog" ADD CONSTRAINT "Blog_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Tag" ADD CONSTRAINT "Tag_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -102,15 +114,3 @@ ALTER TABLE "Note" ADD CONSTRAINT "Note_blogId_fkey" FOREIGN KEY ("blogId") REFE
 
 -- AddForeignKey
 ALTER TABLE "Note" ADD CONSTRAINT "Note_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_BlogCategories" ADD CONSTRAINT "_BlogCategories_A_fkey" FOREIGN KEY ("A") REFERENCES "Blog"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_BlogCategories" ADD CONSTRAINT "_BlogCategories_B_fkey" FOREIGN KEY ("B") REFERENCES "Category"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_BlogTags" ADD CONSTRAINT "_BlogTags_A_fkey" FOREIGN KEY ("A") REFERENCES "Blog"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_BlogTags" ADD CONSTRAINT "_BlogTags_B_fkey" FOREIGN KEY ("B") REFERENCES "Tag"("id") ON DELETE CASCADE ON UPDATE CASCADE;
