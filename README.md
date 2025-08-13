@@ -82,7 +82,8 @@ Blogs Zone is a full-stack application that helps users manage their blog posts 
 
 ### Created by Partik Singh
 ## Screenshots
+<img width="1440" height="787" alt="Screenshot 2025-08-13 at 11 30 13 PM" src="https://github.com/user-attachments/assets/bb5fe26a-aeec-451d-8f20-3ec13ff2f897" />
+<img width="1436" height="785" alt="Screenshot 2025-08-13 at 11 30 46 PM" src="https://github.com/user-attachments/assets/2e1dc2bb-b4e9-440b-a13c-6197146ee155" />
+<img width="1435" height="787" alt="Screenshot 2025-08-13 at 11 32 02 PM" src="https://github.com/user-attachments/assets/b8961e71-5d58-432c-8c5f-83249e6a594c" />
 
-https://drive.google.com/file/d/1uNve2IpI3j8G1j0JD_fmOILRWwD5bbJr/view?usp=sharing
-https://drive.google.com/file/d/1zpf-leZ_-y0Mk0hiUZt7CqJmEDojyXYI/view?usp=sharing
-https://drive.google.com/file/d/1ycBojEeD_Fr_3ej7_EuUXF6cI6-kfzGv/view?usp=sharing
+
