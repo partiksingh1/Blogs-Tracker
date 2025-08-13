@@ -4,9 +4,8 @@ import { useForm } from "react-hook-form";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { signupUser } from "@/store/slices/authSlice";
-import { useEffect } from "react";
+import axios from "axios";
+import { useState } from "react";
 
 const signupSchema = z
   .object({
@@ -23,26 +22,24 @@ const signupSchema = z
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 export const Signup = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
-
-  useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard");
-  }, [isAuthenticated, navigate]);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: { username: "", email: "", password: "", confirmPassword: "" },
   });
 
-  const handleSignup = async (data: SignupFormValues) => {
+  const handleSignup = async (data: SignupFormValues): Promise<void> => {
+    setIsSubmitting(true); // Start loading
     try {
-      await dispatch(signupUser(data)).unwrap();
+      await axios.post("http://localhost:3000/api/v1/signup", data);
       toast.success("Signup successful!");
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast.error(typeof error === "string" ? error : error?.message || "Signup failed");
+      navigate("/login");
+    } catch (error) {
+      console.error(error);
+      toast.error("Signup failed. Please try again.");
+    } finally {
+      setIsSubmitting(false); // Stop loading
     }
   };
 
@@ -57,7 +54,7 @@ export const Signup = () => {
       ]}
       form={form}
       onSubmit={handleSignup}
-      isLoading={isLoading}
+      isLoading={isSubmitting}
       alternateAction={{
         text: "Already have an account?",
         linkText: "Login",

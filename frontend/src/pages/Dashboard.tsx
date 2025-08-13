@@ -1,7 +1,9 @@
 import { CreateBlog } from "@/components/AddBlog";
 import { BlogList } from "@/components/BlogList";
+import { ManageCategories } from "@/components/ManageCategories";
 import { ModeToggle } from "@/components/ToggleTheme";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,26 +12,17 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { logout } from "@/store/slices/authSlice";
-import { useEffect } from "react";
-import toast from "react-hot-toast";
+import { clearAuthToken } from "@/lib/auth";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export const Blogs = () => {
     const navigate = useNavigate();
-    const dispatch = useAppDispatch();
-    const { isAuthenticated } = useAppSelector((state) => state.auth);
+    const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
 
-    useEffect(() => {
-        if (!isAuthenticated) {
-            toast.error("Please Login/register");
-            navigate("/");
-        }
-    }, [isAuthenticated, navigate]);
 
     const handleLogout = () => {
-        dispatch(logout());
+        clearAuthToken();
         navigate("/login");
     };
 
@@ -54,12 +47,21 @@ export const Blogs = () => {
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <ModeToggle />
+                    <Button className="bg-white text-black outline dark:bg-black dark:text-white" onClick={() => setIsManageCategoriesOpen(true)}>Manage Categories</Button>
                     <CreateBlog />
                 </div>
             </div>
 
             {/* Blog List */}
             <BlogList />
+            {/* Manage Categories Dialog */}
+            {isManageCategoriesOpen && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white rounded-lg shadow-lg p-2">
+                        <ManageCategories onClose={() => setIsManageCategoriesOpen(false)} />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

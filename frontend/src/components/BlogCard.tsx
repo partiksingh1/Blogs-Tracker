@@ -1,4 +1,4 @@
-import { Blog, Tag } from "@/types/blog";
+import { Blog } from "@/types/blog";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { ExternalLink, Loader2, Plus, Stars, Trash2Icon } from "lucide-react";
@@ -19,11 +19,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useCallback, useState, memo } from "react";
+import { useCallback, useState, memo, useEffect } from "react";
 import axios from "axios";
-import { getAuthFromStore } from "@/lib/auth";
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { addTagToBlog, removeTagFromBlog } from "@/store/thunks";
 
 const colors = [
     "bg-red-600", "bg-red-700", "bg-red-800",
@@ -55,6 +52,8 @@ interface BlogCardProps {
     blog: Blog;
     onStatusChange: (blogId: string, newStatus: boolean) => void;
     onDelete: (blogId: string) => void;
+    onTagDelete: (blogId: string, tagName: string) => void;
+    onAddTag: (blogId: string, tagName: string) => void;
 }
 
 // Dialog types for unified dialog state
@@ -217,7 +216,7 @@ function AiTextDialog({
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent>
-                <p>{aiText}</p>
+                <p>{aiText || "No summary available."}</p>
             </DialogContent>
         </Dialog>
     );
@@ -227,30 +226,39 @@ export const BlogCard = memo(function BlogCard({
     blog,
     onStatusChange,
     onDelete,
+    onTagDelete,
+    onAddTag
 }: BlogCardProps) {
-    const dispatch = useAppDispatch();
-    const { isLoading, isTagLoading } = useAppSelector((state) => state.blog);
+    const token = localStorage.getItem("token")
 
     // Unified dialog state
     const [openDialog, setOpenDialog] = useState<DialogType>(null);
-
+    const [isStatusLoading, setIsStatusLoading] = useState(false)
+    const [isTagLoading, setIsTagLoading] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
+    const [aiText, setAiText] = useState("");
     // Tag states
     const [tag, setTag] = useState("");
     const [selectedTag, setSelectedTag] = useState<string>("");
 
     // Local status derived from blog prop to avoid stale state
     const status = blog.isRead ? "READ" : "UNREAD";
+    useEffect(() => {
+        console.log("BlogCard updated:", blog); // Check if this component re-renders
+    }, [blog]);
 
     // Handlers
     const handleStatusChange = useCallback(
         async (newStatus: string) => {
             try {
+                setIsStatusLoading(true)
                 onStatusChange(blog.id, newStatus === "READ");
                 toast.success("Status updated successfully!");
             } catch (error) {
                 console.error("Error updating status:", error);
                 toast.error("Failed to update status.");
             }
+            setIsStatusLoading(true)
         },
         [onStatusChange, blog.id]
     );
@@ -268,54 +276,68 @@ export const BlogCard = memo(function BlogCard({
     }, [onDelete, blog.id]);
 
     const handleAddTag = useCallback(async () => {
+        setIsTagLoading(true)
         if (!tag.trim()) {
             toast.error("Tag cannot be empty.");
             return;
         }
         try {
-            await dispatch(addTagToBlog({ blogId: blog.id, tagName: tag.trim() }));
-            toast.success("Tag added successfully!");
-            setTag("");
+            await axios.post(
+                `${import.meta.env.VITE_BASE_URL}/add-tag`, { blogId: blog.id, tagName: tag.trim() },
+                {
+                    headers: { Authorization: `${token}` }
+                }
+            ).then(() => {
+                toast.success("Tag added successfully!");
+                setTag("");
+                onAddTag(blog.id, selectedTag);
+            })
         } catch (error) {
             console.error("Error adding tag:", error);
             toast.error("Failed to add tag.");
         } finally {
             setOpenDialog(null);
+            setIsTagLoading(false)
         }
-    }, [dispatch, blog.id, tag]);
-
+    }, [blog.id, tag, onAddTag, selectedTag, token]);
     const handleDeleteTag = useCallback(async () => {
+        setIsTagLoading(true);
         if (!selectedTag) return;
         try {
-            await dispatch(removeTagFromBlog({ blogId: blog.id, tagName: selectedTag }));
+            await axios.delete(
+                `${import.meta.env.VITE_BASE_URL}/delete-tag`,
+                {
+                    headers: { Authorization: `${token}` },
+                    data: { blogId: blog.id, tagName: selectedTag },
+                }
+            );
             toast.success("Tag deleted successfully!");
+            onTagDelete(blog.id, selectedTag); // Update local state
         } catch (error) {
             console.error("Error deleting tag:", error);
             toast.error("Failed to delete tag.");
         } finally {
             setSelectedTag("");
             setOpenDialog(null);
+            setIsTagLoading(false);
         }
-    }, [dispatch, blog.id, selectedTag]);
+    }, [blog.id, selectedTag, onTagDelete, token]);
 
-    const [aiText, setAiText] = useState("");
 
     const handleSummarize = useCallback(async () => {
-        const auth = getAuthFromStore();
-        if (!auth) {
-            toast.error("You must be logged in to summarize.");
-            setOpenDialog(null);
-            return;
-        }
+        setIsLoading(true);
+        const token = localStorage.getItem("token");
         try {
             const response = await axios.post(
                 `${import.meta.env.VITE_BASE_URL}/summarize`,
                 { url: blog.url },
-                { headers: { Authorization: `${auth.token}` } }
+                { headers: { Authorization: `${token}` } }
             );
+            console.log(response);  // Log the response to check its structure
             if (response.status === 200) {
+                console.log("response is", response.data.summary);
+
                 setAiText(response.data.summary);
-                toast.success("Successfully summarized!");
                 setOpenDialog("aiText");
             } else {
                 toast.error("Failed to summarize blog.");
@@ -324,9 +346,19 @@ export const BlogCard = memo(function BlogCard({
             console.error("Error summarizing:", error);
             toast.error("Failed to summarize.");
         } finally {
-            if (openDialog === "summarize") setOpenDialog(null);
+            // if (openDialog === "summarize") setOpenDialog(null);
+            setIsLoading(false);
         }
-    }, [blog.url, openDialog]);
+    }, [blog.url]);
+    // const handleSummarize = () => {
+    //     setIsLoading(true);
+    //     // Mock API call
+    //     setTimeout(() => {
+    //         setAiText("This is a sample summary generated by AI. The content would normally come from your /summarize endpoint.");
+    //         setOpenDialog("aiText");
+    //         setIsLoading(false);
+    //     }, 1000);
+    // };
 
     // No need for effect to refetch blogs here; redux thunk actions update store on success
 
@@ -339,7 +371,7 @@ export const BlogCard = memo(function BlogCard({
                         {new Date(blog.createdAt).toLocaleDateString()}
                     </span>
 
-                    <Select value={status} onValueChange={handleStatusChange} disabled={isLoading} aria-label="Blog read status">
+                    <Select value={status} onValueChange={handleStatusChange} disabled={isStatusLoading} aria-label="Blog read status">
                         <SelectTrigger className="w-[120px] ml-4">
                             <SelectValue />
                         </SelectTrigger>
@@ -375,7 +407,7 @@ export const BlogCard = memo(function BlogCard({
             <CardFooter>
                 <div className="flex flex-wrap overflow-hidden">
                     <div className="flex flex-row flex-wrap">
-                        {(blog.tags ?? []).map((tag: Tag) => (
+                        {(blog.tags ?? []).map((tag) => (
                             <button
                                 type="button"
                                 onClick={() => {
@@ -442,7 +474,7 @@ export const BlogCard = memo(function BlogCard({
             <AiTextDialog
                 isOpen={openDialog === "aiText"}
                 onClose={() => setOpenDialog(null)}
-                aiText={aiText}
+                aiText={aiText || "Summary not available."}
             />
         </Card>
     );

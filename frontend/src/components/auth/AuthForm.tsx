@@ -22,7 +22,7 @@ export type AuthField = {
 interface AuthFormProps {
     title: string;
     fields: AuthField[];
-    form: any; // react-hook-form's `form` object
+    form: any;
     onSubmit: (data: any) => Promise<void>;
     isLoading?: boolean;
     alternateAction?: {

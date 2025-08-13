@@ -1,17 +1,23 @@
-import { store } from '../store/store'
-import { logout } from '../store/slices/authSlice'
-import toast from 'react-hot-toast'
 
-export const getAuthFromStore = () => {
-    const state = store.getState()
-    return {
-        token: state.auth.token,
-        userId: state.auth.userId,
-        isAuthenticated: state.auth.isAuthenticated
-    }
-}
 
-export const logoutUser = () => {
-    store.dispatch(logout())
-    toast.success('Logged out successfully')
-}
+// Save token (you might do this after login)
+export const setAuth = (token: string, user: string) => {
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", user);
+};
+
+// Get token
+export const getAuthToken = (): string | null => {
+    return localStorage.getItem("token");
+};
+
+// Remove token (for logout)
+export const clearAuthToken = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+};
+
+// Check if user is authenticated
+export const isAuthenticated = (): boolean => {
+    return !!getAuthToken();
+};

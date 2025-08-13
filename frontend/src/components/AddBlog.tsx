@@ -6,17 +6,13 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { ChangeEvent, useState, useEffect, useCallback } from "react";
+import { ChangeEvent, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";;
-import { getAuthFromStore } from "@/lib/auth";
 import { CategorySelect } from "./CategorySelection";
-import { createBlog } from "@/store/thunks";
-import { useAppDispatch } from "@/hooks/hooks";
-import { debounce } from "lodash";
+import { Button } from "@/components/ui/button";
 
 export const CreateBlog = () => {
     const [title, setTitle] = useState("");
@@ -25,38 +21,8 @@ export const CreateBlog = () => {
     const [isRead, setIsRead] = useState(false);
     const [loading, setLoading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
-
-    const dispatch = useAppDispatch();
-
-    // Debounced fetchBlogInfo to avoid multiple calls while typing
-    const fetchBlogInfo = useCallback(
-        debounce(async (inputUrl: string) => {
-            const auth = getAuthFromStore();
-            if (!auth) return;
-            const { token } = auth;
-            try {
-                const response = await axios.post(
-                    `${import.meta.env.VITE_BASE_URL}/fetchContent`,
-                    { url: inputUrl },
-                    { headers: { Authorization: `${token}` } }
-                );
-
-                if (response.data?.data?.title) {
-                    setTitle(response.data.data.title);
-                }
-            } catch (error: any) {
-                console.error("Error fetching blog info:", error?.message ?? error);
-                toast.error("Could not fetch blog details.");
-            }
-        }, 500),
-        []
-    );
-
-    useEffect(() => {
-        if (url.startsWith("http://") || url.startsWith("https://")) {
-            fetchBlogInfo(url);
-        }
-    }, [url, fetchBlogInfo]);
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("user");
 
     const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setTitle(e.target.value);
@@ -99,27 +65,24 @@ export const CreateBlog = () => {
 
         setLoading(true);
         try {
-            const action = await dispatch(
-                createBlog({
-                    title,
-                    url,
-                    categoryName: category.toLowerCase(),
-                    isRead,
+            await axios.post(`${import.meta.env.VITE_BASE_URL}/add`, {
+                title,
+                url,
+                categoryName: category.toLowerCase(),
+                isRead,
+                userId
+            },
+                {
+                    headers: {
+                        Authorization: `${token}`,  // Pass the token in the Authorization header
+                    },
+                }).then(() => {
+                    toast.success("Blog added successfully!");
+                    resetForm();
+                    setDialogOpen(false);
                 })
-            );
-
-            if (createBlog.fulfilled.match(action)) {
-                toast.success("Blog added successfully!");
-                resetForm();
-                setDialogOpen(false);
-                // Optionally, you could trigger a refresh or fetch blogs here instead of navigate(0)
-            } else {
-                toast.error(
-                    (action.payload as string) || "Error adding blog :("
-                );
-            }
-        } catch (error: any) {
-            console.error("Error adding blog:", error?.message ?? error);
+        } catch (error: unknown) {
+            console.error("Error adding blog:", error);
             toast.error("Error adding blog :(");
         } finally {
             setLoading(false);
@@ -129,11 +92,7 @@ export const CreateBlog = () => {
     return (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-                <Button
-                    className="border-black"
-                    variant="outline"
-                    aria-haspopup="dialog"
-                >
+                <Button>
                     ADD BLOG
                 </Button>
             </DialogTrigger>

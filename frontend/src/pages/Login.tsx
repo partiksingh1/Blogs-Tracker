@@ -4,9 +4,9 @@ import { useForm } from "react-hook-form";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
-import { loginUser } from "@/store/slices/authSlice";
-import { useEffect } from "react";
+import axios from "axios";
+import { useState } from "react";
+import { setAuth } from "@/lib/auth";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -15,28 +15,32 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const Login = () => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAppSelector((state) => state.auth);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard");
-  }, [isAuthenticated, navigate]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 
-  const handleLogin = async (data: LoginFormValues) => {
+  const handleLogin = async (data: LoginFormValues): Promise<void> => {
+    setIsSubmitting(true); // Start loading
     try {
-      await dispatch(loginUser(data)).unwrap();
-      toast.success("Login successful!");
-      navigate("/dashboard");
-    } catch (error: any) {
-      toast.error(typeof error === "string" ? error : error?.message || "Login failed");
+      await axios.post("http://localhost:3000/api/v1/login", data).then((res) => {
+        console.log("login res is ", res);
+        setAuth(res.data.token, res.data.user.id)
+        toast.success("Login successful!");
+        navigate("/dashboard");
+      });
+    } catch (error) {
+      console.error(error)
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setIsSubmitting(false); // Stop loading
     }
   };
+
 
   return (
     <AuthForm
@@ -47,7 +51,7 @@ export const Login = () => {
       ]}
       form={form}
       onSubmit={handleLogin}
-      isLoading={isLoading}
+      isLoading={isSubmitting}
       alternateAction={{
         text: "Don't have an account?",
         linkText: "Signup",
