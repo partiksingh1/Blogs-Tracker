@@ -53,7 +53,6 @@ interface BlogCardProps {
     onStatusChange: (blogId: string, newStatus: boolean) => void;
     onDelete: (blogId: string) => void;
     onTagDelete: (blogId: string, tagName: string) => void;
-    onAddTag: (blogId: string, tagName: string) => void;
 }
 
 // Dialog types for unified dialog state
@@ -227,7 +226,6 @@ export const BlogCard = memo(function BlogCard({
     onStatusChange,
     onDelete,
     onTagDelete,
-    onAddTag
 }: BlogCardProps) {
     const token = localStorage.getItem("token")
 
@@ -290,7 +288,7 @@ export const BlogCard = memo(function BlogCard({
             ).then(() => {
                 toast.success("Tag added successfully!");
                 setTag("");
-                onAddTag(blog.id, selectedTag);
+                window.location.reload()
             })
         } catch (error) {
             console.error("Error adding tag:", error);
@@ -299,7 +297,7 @@ export const BlogCard = memo(function BlogCard({
             setOpenDialog(null);
             setIsTagLoading(false)
         }
-    }, [blog.id, tag, onAddTag, selectedTag, token]);
+    }, [blog.id, tag, selectedTag, token]);
     const handleDeleteTag = useCallback(async () => {
         setIsTagLoading(true);
         if (!selectedTag) return;

@@ -45,10 +45,6 @@ export const CreateBlog = () => {
             toast.error("Please enter a valid URL");
             return false;
         }
-        if (!category.trim()) {
-            toast.error("Please select a category");
-            return false;
-        }
         return true;
     };
 
@@ -80,6 +76,7 @@ export const CreateBlog = () => {
                     toast.success("Blog added successfully!");
                     resetForm();
                     setDialogOpen(false);
+                    window.location.reload();
                 })
         } catch (error: unknown) {
             console.error("Error adding blog:", error);

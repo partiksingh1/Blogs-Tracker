@@ -164,25 +164,6 @@ export const BlogList = () => {
       )
     );
   }
-  const handleTagAdd = (blogId: string, tagName: string) => {
-    setBlogs(prevBlogs => {
-      const updatedBlogs = prevBlogs.map(blog =>
-        blog.id === blogId
-          ? {
-            ...blog,
-            tags: blog.tags.some(tag => tag.name === tagName)
-              ? blog.tags // If tag already exists, leave tags unchanged
-              : [...blog.tags, { name: tagName }] // Add tag only if it doesn't exist
-          }
-          : blog
-      );
-
-      console.log('Updated Blogs:', updatedBlogs); // Debugging
-
-      return updatedBlogs;
-    });
-  };
-
 
   useEffect(() => {
     fetchDashboardData();
@@ -321,7 +302,6 @@ export const BlogList = () => {
                 onStatusChange={handleStatusChange}
                 onDelete={handleDelete}
                 onTagDelete={handleTagDelete}
-                onAddTag={handleTagAdd}
               />
             ))
           )}

@@ -13,13 +13,19 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { clearAuthToken } from "@/lib/auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export const Blogs = () => {
+export const Dashboard = () => {
     const navigate = useNavigate();
     const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
-
+    const token = localStorage.getItem("token")
+    const user = localStorage.getItem("user")
+    useEffect(() => {
+        if (!user || !token) {
+            navigate("/");
+        }
+    }, [user, token, navigate]);
 
     const handleLogout = () => {
         clearAuthToken();
