@@ -37,8 +37,6 @@ model Blog {
   user          User     @relation(fields: [userId], references: [id])
   notes         Note[]
 
-  categories    Category[] @relation("BlogCategories", onDelete: Cascade)
-
   // Optimized indexes
   @@index([userId, createdAt])
   @@index([userId, isRead])
@@ -53,7 +51,6 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
-  blogs     Blog[]   @relation("BlogCategories", onDelete: Cascade) // Add cascade delete
 
   @@unique([userId, name])
   @@index([userId])
