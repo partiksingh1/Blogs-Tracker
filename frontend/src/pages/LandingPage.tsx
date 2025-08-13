@@ -1,4 +1,4 @@
-import { ArrowRight, Sparkles, Zap, Users, BarChart3 } from "lucide-react"
+import { ArrowRight, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Link } from "react-router-dom"
@@ -6,27 +6,23 @@ import { Link } from "react-router-dom"
 
 const features = [
     {
-        icon: Zap,
-        title: "Lightning Fast Setup",
+        title: "Fast Setup",
         description: "Create your account in under 30 seconds and start blogging immediately",
         image: "/c1.png?height=400&width=600",
     },
     {
-        icon: BarChart3,
         title: "Beautiful Dashboard",
         description: "Your content organized in a clean, intuitive interface that makes management effortless",
         image: "/hero.png?height=400&width=600",
     },
     {
-        icon: Sparkles,
-        title: "Smart Content Creation",
-        description: "Write and categorize posts with smart formatting",
+        title: "Organize Content Easily",
+        description: "Easily organize your blogs/articles by adding tags and categories",
         image: "/c3.png?height=400&width=600",
     },
     {
-        icon: Users,
-        title: "Intelligent Insights",
-        description: "Get AI-generated summaries of your content ",
+        title: "AI Summaries",
+        description: "Get AI-generated summaries of your content",
         image: "/c2.png?height=400&width=600",
     },
 ]
@@ -149,11 +145,6 @@ export default function LandingPage() {
                                         <h3 className="text-2xl font-bold text-gray-900 sm:text-3xl">{feature.title}</h3>
 
                                         <p className="text-lg text-gray-600 leading-relaxed">{feature.description}</p>
-
-                                        <Button variant="outline" className="group bg-transparent">
-                                            Learn More
-                                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                                        </Button>
                                     </div>
 
                                     <div className="flex-1">
