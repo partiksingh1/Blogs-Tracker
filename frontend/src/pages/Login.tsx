@@ -27,7 +27,7 @@ export const Login = () => {
   const handleLogin = async (data: LoginFormValues): Promise<void> => {
     setIsSubmitting(true); // Start loading
     try {
-      await axios.post("http://localhost:3000/api/v1/login", data).then((res) => {
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/login`, data).then((res) => {
         console.log("login res is ", res);
         setAuth(res.data.token, res.data.user.id)
         toast.success("Login successful!");

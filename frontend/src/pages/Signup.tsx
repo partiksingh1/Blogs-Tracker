@@ -32,7 +32,7 @@ export const Signup = () => {
   const handleSignup = async (data: SignupFormValues): Promise<void> => {
     setIsSubmitting(true); // Start loading
     try {
-      await axios.post("http://localhost:3000/api/v1/signup", data);
+      await axios.post(`${import.meta.env.VITE_BASE_URL}/signup`, data);
       toast.success("Signup successful!");
       navigate("/login");
     } catch (error) {
