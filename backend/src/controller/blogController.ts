@@ -15,7 +15,7 @@ export const GetDashboardData = async (req: Request, res: Response): Promise<any
 
     try {
         // Single query to get all needed data
-        const [blogs, categories, tags] = await Promise.all([
+        const [blogs, categories] = await Promise.all([
             prisma.blog.findMany({
                 where: { userId },
                 select: {
@@ -26,7 +26,6 @@ export const GetDashboardData = async (req: Request, res: Response): Promise<any
                     categoryName: true,
                     tagNames: true,
                     createdAt: true,
-                    updatedAt: true
                 },
                 orderBy: { createdAt: 'desc' }
             }),
@@ -34,10 +33,6 @@ export const GetDashboardData = async (req: Request, res: Response): Promise<any
                 where: { userId },
                 select: { id: true, name: true }
             }),
-            prisma.tag.findMany({
-                where: { userId },
-                select: { id: true, name: true }
-            })
         ]);
 
         res.status(200).json({
@@ -45,7 +40,6 @@ export const GetDashboardData = async (req: Request, res: Response): Promise<any
             data: {
                 blogs,
                 categories,
-                tags,
                 stats: {
                     totalBlogs: blogs.length,
                     readBlogs: blogs.filter(b => b.isRead).length,
@@ -94,7 +88,6 @@ export const AddBlog = async (req: Request, res: Response): Promise<any> => {
                     userId,
                     isRead: isRead || false,
                     categoryName: category.name,
-                    tagIds: [],
                     tagNames: []
                 }
             });
@@ -115,10 +108,9 @@ export const AddBlog = async (req: Request, res: Response): Promise<any> => {
 }
 
 export const UpdateBlogStatus = async (req: Request, res: Response): Promise<any> => {
-    const { userId, status } = req.body;
-    const { blogId } = req.params;
+    const { status, blogId } = req.body;
 
-    if (!blogId || !userId || typeof status !== "boolean") {
+    if (!blogId || typeof status !== "boolean") {
         return res.status(400).json({
             message: "Invalid request — blogId, userId, and status(boolean) are required"
         });
@@ -126,7 +118,7 @@ export const UpdateBlogStatus = async (req: Request, res: Response): Promise<any
 
     try {
         const blog = await prisma.blog.update({
-            where: { id: blogId, userId },
+            where: { id: blogId },
             data: { isRead: status },
         });
         if (blog) {
@@ -173,58 +165,78 @@ export const DeleteBlog = async (req: Request, res: Response): Promise<any> => {
  * Add Tag to Blog
  */
 export const AddTagToBlog = async (req: Request, res: Response): Promise<any> => {
-    const { blogId, userId, tagName } = req.body;
+    const { blogId, tagName } = req.body;
 
-    if (!blogId || !userId || !tagName?.trim()) {
-        return res.status(400).json({
-            message: "Invalid request — blogId, userId, and tagName are required"
-        });
+    if (!tagName) {
+        return res.status(400).json({ error: 'tagName is required' });
     }
 
     try {
-        const result = await prisma.$transaction(async (tx) => {
-            // Upsert tag
-            const tag = await tx.tag.upsert({
-                where: {
-                    userId_name: { userId, name: tagName.toLowerCase() }
-                },
-                update: {},
-                create: {
-                    name: tagName.toLowerCase(),
-                    userId
-                }
-            });
-
-            // Update blog's tag arrays (avoid duplicate pushes)
-            const existingBlog = await tx.blog.findUnique({
-                where: { id: blogId },
-                select: { tagIds: true, tagNames: true }
-            });
-
-            if (!existingBlog) throw new Error("Blog not found");
-
-            const updatedTagIds = Array.from(new Set([...existingBlog.tagIds, tag.id]));
-            const updatedTagNames = Array.from(new Set([...existingBlog.tagNames, tag.name]));
-
-            const blog = await tx.blog.update({
-                where: { id: blogId },
-                data: {
-                    tagIds: updatedTagIds,
-                    tagNames: updatedTagNames
-                }
-            });
-
-            return { blog, tag };
+        // Fetch the blog
+        const blog = await prisma.blog.findUnique({
+            where: { id: blogId },
         });
 
-        res.status(200).json({
-            message: "Tag added successfully to the blog",
-            data: result
+        if (!blog) {
+            return res.status(404).json({ error: 'Blog not found' });
+        }
+
+        // Check if the tag is already in the blog
+        if (blog.tagNames.includes(tagName)) {
+            return res.status(400).json({ error: 'Tag already exists in this blog' });
+        }
+
+        // Add the new tag to the blog
+        const updatedBlog = await prisma.blog.update({
+            where: { id: blogId },
+            data: { tagNames: [...blog.tagNames, tagName] },
         });
-    } catch (error: any) {
-        res.status(500).json({
-            message: "Internal server error while adding tag to blog",
-            error: error.message
+
+        return res.status(200).json({ message: 'Tag added successfully', blog: updatedBlog });
+    } catch (error) {
+        console.error('Error adding tag:', error);
+        return res.status(500).json({
+            message: 'Internal server error while adding tag to blog',
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+};
+
+export const RemoveTagFromBlog = async (req: Request, res: Response): Promise<any> => {
+    const { tagName, blogId } = req.body;
+
+    if (!tagName) {
+        return res.status(400).json({ error: 'tagName is required' });
+    }
+
+    try {
+        const blog = await prisma.blog.findUnique({
+            where: { id: blogId },
+        });
+
+        if (!blog) {
+            return res.status(404).json({ error: 'Blog not found' });
+        }
+
+        if (!blog.tagNames.includes(tagName)) {
+            return res.status(400).json({ error: 'Tag not found in this blog' });
+        }
+
+        // Remove the tag from the array
+        const updatedTags = blog.tagNames.filter(tag => tag !== tagName);
+
+        // Update the blog with the new tag array
+        const updatedBlog = await prisma.blog.update({
+            where: { id: blogId },
+            data: { tagNames: updatedTags },
+        });
+
+        return res.status(200).json({ message: 'Tag removed successfully', blog: updatedBlog });
+    } catch (error) {
+        console.error('Error removing tag:', error);
+        return res.status(500).json({
+            message: 'Internal server error while deleting tag from blog',
+            error: error instanceof Error ? error.message : String(error),
         });
     }
 };

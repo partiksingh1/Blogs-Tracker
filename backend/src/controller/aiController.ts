@@ -16,7 +16,7 @@ export const summarize = async (req: Request, res: Response) => {
     if (response) {
         var decoder = new TextDecoder();
         var text = decoder.decode(response.data);
-        const summary = await getAiSummary(text, "summarize this and start with 'this artile/blog is about' ");
+        const summary = await getAiSummary(text, "Summarize the article/blog in detail, starting with 'This article/blog is about'. Include all key points, arguments, and relevant insights, providing enough context to understand the core ideas. The summary should cover the main topics discussed, highlight any significant conclusions, and capture the essence of the article. The tone should be neutral, and the summary should be long enough to provide a clear overview without missing important information. Aim for a comprehensive yet coherent summary, approximately 6-10 sentences, depending on the length of the original content.");
         if (summary) {
             res.status(200).json({
                 message: "successfully summarized",

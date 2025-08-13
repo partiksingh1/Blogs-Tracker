@@ -20,7 +20,6 @@ model User {
   createdAt  DateTime   @default(now())
   updatedAt  DateTime   @default(now())
   Category   Category[]
-  Tag        Tag[]
 
   @@index([email])
 }
@@ -31,14 +30,14 @@ model Blog {
   url           String
   title         String?
   isRead        Boolean  @default(false)
-  // Denormalized fields - store as JSON for better performance
-  tagIds        String[] @default([]) // Array of tag IDs
   categoryName  String?
   tagNames      String[] @default([]) // Denormalized for quick filtering
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now())
   user          User     @relation(fields: [userId], references: [id])
   notes         Note[]
+
+  categories    Category[] @relation("BlogCategories", onDelete: Cascade)
 
   // Optimized indexes
   @@index([userId, createdAt])
@@ -54,17 +53,7 @@ model Category {
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
-
-  @@unique([userId, name])
-  @@index([userId])
-}
-
-model Tag {
-  id        String   @id @default(uuid())
-  userId    String
-  name      String
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
+  blogs     Blog[]   @relation("BlogCategories", onDelete: Cascade) // Add cascade delete
 
   @@unique([userId, name])
   @@index([userId])
