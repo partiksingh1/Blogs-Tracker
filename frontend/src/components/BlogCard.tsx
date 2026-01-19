@@ -1,7 +1,7 @@
 import { Blog } from "@/types/blog";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { ExternalLink, Loader2, Plus, Stars, Trash2Icon } from "lucide-react";
+import { ExternalLink, InfoIcon, Loader2, Plus, Stars, Trash2Icon } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -361,14 +361,34 @@ export const BlogCard = memo(function BlogCard({
     // No need for effect to refetch blogs here; redux thunk actions update store on success
 
     return (
-        <Card className="w-full p-1 transform transition-all duration-300 hover:shadow-lg hover:scale-105">
+        <Card className="w-full p-4 transform transition-all duration-300 hover:shadow-lg hover:scale-100">
             <CardHeader>
                 <CardTitle className="flex flex-col items-start">{blog.title}</CardTitle>
                 <CardDescription className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">
                         {new Date(blog.createdAt).toLocaleDateString()}
                     </span>
+                </CardDescription>
+            </CardHeader>
 
+            <CardContent>
+                <div className="flex justify-between">
+                    <Button
+                        onClick={() => window.open(blog.url, "_blank")}
+                        className="w-1/6 underline text-xs"
+                        aria-label={`Open blog ${blog.title} in new tab`}
+                    >
+                        <ExternalLink />
+                    </Button>
+                    {/* <Button
+                        onClick={() => setOpenDialog("summarize")}
+                        className="bg-white"
+                        aria-label="Summarize blog using AI"
+                    >
+                        <InfoIcon color="black" />
+                        <span className="block sm:hidden">AI</span>
+                        <span className="hidden sm:inline">Summarize with AI</span>
+                    </Button> */}
                     <Select value={status} onValueChange={handleStatusChange} disabled={isStatusLoading} aria-label="Blog read status">
                         <SelectTrigger className="w-[120px] ml-4">
                             <SelectValue />
@@ -378,27 +398,6 @@ export const BlogCard = memo(function BlogCard({
                             <SelectItem value="UNREAD">Unread</SelectItem>
                         </SelectContent>
                     </Select>
-                </CardDescription>
-            </CardHeader>
-
-            <CardContent>
-                <div className="flex justify-between">
-                    <Button
-                        onClick={() => window.open(blog.url, "_blank")}
-                        className="w-1/6 underline text-xs text-black bg-green-400 hover:text-white"
-                        aria-label={`Open blog ${blog.title} in new tab`}
-                    >
-                        <ExternalLink />
-                    </Button>
-                    <Button
-                        onClick={() => setOpenDialog("summarize")}
-                        className="w-3/6 text-xs text-white bg-blue-600 hover:text-white"
-                        aria-label="Summarize blog using AI"
-                    >
-                        <Stars />
-                        <span className="block sm:hidden">AI</span>
-                        <span className="hidden sm:inline">Summarize with AI</span>
-                    </Button>
                 </div>
             </CardContent>
 
@@ -420,23 +419,23 @@ export const BlogCard = memo(function BlogCard({
                             </button>
                         ))}
 
-                        <button
+                        {/* <button
                             type="button"
                             onClick={() => setOpenDialog("addTag")}
                             className="m-1 hover:bg-gray-300 rounded-full"
                             aria-label="Add tag"
                         >
                             <Plus />
-                        </button>
+                        </button> */}
 
-                        <button
+                        {/* <button
                             type="button"
                             onClick={() => setOpenDialog("delete")}
                             className="m-1 hover:bg-gray-300 rounded text-red-700"
                             aria-label="Delete blog"
                         >
                             <Trash2Icon />
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </CardFooter>

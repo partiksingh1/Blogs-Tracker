@@ -1,5 +1,3 @@
-
-
 // Save token (you might do this after login)
 export const setAuth = (token: string, user: string) => {
     localStorage.setItem("token", token);
