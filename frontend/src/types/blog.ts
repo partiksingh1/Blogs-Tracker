@@ -3,11 +3,11 @@ export interface Blog {
     title: string | null,
     url: string,
     isRead: boolean,
-    createdAt: Date
+    createdAt: string
     categories: {
         id: string,
         name: string
-    }[]
+    }
     tags: {
         name: string
     }[]

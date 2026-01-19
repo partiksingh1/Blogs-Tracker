@@ -1,21 +1,17 @@
 import { Route, Routes } from "react-router-dom"
-import { Login } from "./pages/Login"
 import './App.css'
-import { Signup } from "./pages/Signup"
-import { Dashboard } from "./pages/Dashboard"
 import { Toaster } from 'react-hot-toast';
-import LandingPage from "./pages/LandingPage"
-
+import LandingPage from "./app/page";
+import { Dashboard } from "./app/dashboard/page";
+import { Category } from "./app/categories/page";
 function App() {
-
   return (
     <>
       <Toaster />
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Login />} />
         <Route path='/dashboard' element={<Dashboard />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path='/categories' element={<Category />} />
       </Routes>
     </>
   )
