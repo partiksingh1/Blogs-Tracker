@@ -1,4 +1,5 @@
 import axios from "axios";
+import { error } from "console";
 
 const API_URL = import.meta.env.VITE_BASE_URL
 
@@ -72,5 +73,22 @@ export const RemoveTag = async (tagId: string, blogId: string) => {
         return res.data
     }
     throw new Error("Failed to delete Tag")
+}
+
+export const PostBlog = async (url: string, title: string, isRead: boolean, categoryName: string, userId: string) => {
+    if (categoryName == "null") {
+        categoryName = ""
+    }
+    const res = await axios.post(`${API_URL}/add`, {
+        url,
+        title,
+        isRead,
+        categoryName,
+        userId
+    })
+    if (res.status == 201) {
+        return res.data
+    }
+    throw new Error("Failed to add blog")
 }
 // export const GetTags = async()

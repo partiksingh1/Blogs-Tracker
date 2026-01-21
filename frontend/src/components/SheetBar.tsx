@@ -27,7 +27,7 @@ export function SheetBar({ blog }: SheetBarProps) {
     const [newTag, setNewTag] = useState("")
     const { user } = useStateContext();
     const userId = user?.id;
-    const { addTagMutation } = useCategoryMutations(userId);
+    const { addTagMutation, deleteTagMutation } = useCategoryMutations(userId);
     const handleTagSubmit = (blogId: string) => {
         if (!newTag.trim()) return;
         addTagMutation.mutate({ newTag, blogId }, {
@@ -39,6 +39,10 @@ export function SheetBar({ blog }: SheetBarProps) {
                 })
             }
         });
+    }
+    const handleDelete = async (tagId: string, blogId: string) => {
+        if (!confirm("Are you sure you want to delete this tag?")) return;
+        deleteTagMutation.mutate({ tagId, blogId });
     }
     return (
         <SheetContent>
@@ -68,6 +72,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                         {blog.tags?.map((tag, index) => (
                             <Badge
                                 key={index}
+                                onClick={() => handleDelete(tag.id, blog.id)}
                                 className="bg-sky-700 px-2 py-1 rounded-md text-sm justify-center items-center cursor-pointer"
                             >
                                 {tag.name}

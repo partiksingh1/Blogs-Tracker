@@ -1,4 +1,4 @@
-import { DeleteCategories, PostCategories, PostTag, RemoveTag, UpdateCategory } from "@/api/dashboard";
+import { DeleteCategories, PostBlog, PostCategories, PostTag, RemoveTag, UpdateCategory } from "@/api/dashboard";
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
 
@@ -15,6 +15,16 @@ export const useCategoryMutations = (userId?: string) => {
             // setShowAddCategoryModal(false)
         }
     })
+    const addBlogMutation = useMutation({
+        mutationFn: ({ url, title, isRead, categoryName }: { url: string, title: string, isRead: boolean, categoryName: string }) => PostBlog(url, title, isRead, categoryName, userId as string),
+        onSuccess: () => {
+            toast.success("Blog added successfully")
+            queryClient.invalidateQueries({
+                queryKey: ["getBlogs", userId]
+            })
+        }
+    })
+
     const deleteMutation = useMutation({
         mutationFn: (categoryId: string) => DeleteCategories(categoryId as string),
         onSuccess: () => {
@@ -55,5 +65,5 @@ export const useCategoryMutations = (userId?: string) => {
             })
         }
     })
-    return { addCategory, deleteCategory: deleteMutation.mutate, updateMutation, addTagMutation, deleteTagMutation }
+    return { addCategory, deleteCategory: deleteMutation.mutate, updateMutation, addTagMutation, deleteTagMutation, addBlogMutation }
 }
