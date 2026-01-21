@@ -6,6 +6,6 @@ export const useTags = (userId?: string) => {
         queryKey: ["getTags", userId],
         queryFn: () => GetTags(userId as string),
         enabled: !!userId,
-        select: (res) => res?.data || []
+        select: (res) => res || []
     })
 }

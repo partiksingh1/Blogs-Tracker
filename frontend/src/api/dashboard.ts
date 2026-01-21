@@ -62,9 +62,11 @@ export const PostTag = async (newTag: string, userId: string, blogId: string) =>
     throw new Error("Failed to post Tag")
 }
 export const RemoveTag = async (tagId: string, blogId: string) => {
-    const res = await axios.post(`${API_URL}/delete-tag`, {
-        tagId,
-        blogId,
+    const res = await axios.delete(`${API_URL}/delete-tag`, {
+        data: {
+            tagId,
+            blogId
+        }
     })
     if (res.status == 200) {
         return res.data

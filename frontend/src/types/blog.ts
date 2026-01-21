@@ -9,6 +9,7 @@ export interface Blog {
         name: string
     }
     tags: {
+        id: string
         name: string
     }[]
 }

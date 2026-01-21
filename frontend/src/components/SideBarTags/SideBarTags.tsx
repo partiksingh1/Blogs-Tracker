@@ -13,10 +13,10 @@ export const SideBarTags = () => {
     const { user } = useStateContext();
     const userId = user?.id;
 
-    const categoriesQuery = useTags(userId);
+    const tagsQuery = useTags(userId);
     // const { addCategory } = useCategoryMutations(userId);
 
-    if (categoriesQuery.isLoading) return null;
+    if (tagsQuery.isLoading) return false;
 
     return (
         <SidebarMenuItem>
@@ -30,7 +30,7 @@ export const SideBarTags = () => {
 
             <CollapsibleContent>
                 <TagList
-                    categories={categoriesQuery.data ?? []}
+                    tags={tagsQuery.data.tags}
                 // onAdd={(name: any) => addCategory.mutate(name)}
                 // isAdding={addCategory.isPending}
                 />
