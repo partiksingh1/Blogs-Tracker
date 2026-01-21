@@ -7,17 +7,11 @@ import {
 } from "@/components/ui/select";
 import {
   Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import toast from "react-hot-toast";
 import { useEffect, useState, useCallback } from "react";
-import axios from "axios";
 import { Category } from "@/types/category";
+import { useCategories } from "@/api/useCategory";
+import { useStateContext } from "@/lib/ContextProvider";
 
 interface CategorySelectProps {
   id?: string;
@@ -29,73 +23,13 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
   const [selectedCategory, setSelectedCategory] = useState(value ?? "");
   const [newCategory, setNewCategory] = useState("");
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("user");
-  const [isCategoryLoading, setIsCategoryLoading] = useState(false);
-
-  // useEffect to fetch categories when token is available
-  useEffect(() => {
-    if (token) {
-      fetchCategories();
-    }
-  }, [token]); // Adding token to dependencies ensures it refetches if token changes
-
-  // Fetch categories from the server
-  const fetchCategories = useCallback(async () => {
-    if (!token) return;
-    try {
-      setIsCategoryLoading(true);
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/categories/${userId}`, {
-        headers: { Authorization: `${token}` },
-      });
-      console.log("res is", res);
-
-
-      // Ensure `data` is always an array before setting it to state
-      if (Array.isArray(res.data.data)) {
-        setCategories(res.data.data);
-      } else {
-        setCategories([]); // Fallback to empty array if not an array
-      }
-    } catch (err) {
-      console.error("Failed to fetch categories", err);
-      toast.error("Failed to fetch categories");
-      setCategories([]); // Ensure categories are reset to an empty array on error
-    } finally {
-      setIsCategoryLoading(false);
-    }
-  }, [token, userId]);
-
-  // Create a new category
-  const handleCreateCategory = async () => {
-    if (!newCategory.trim()) {
-      toast.error("Category name cannot be empty");
-      return;
-    }
-
-    try {
-      setIsCategoryLoading(true);
-      await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/categories`,
-        { name: newCategory.trim(), userId: userId },
-        { headers: { Authorization: `${token}` } }
-      );
-      setNewCategory("");
-      setShowAddCategoryModal(false);
-      fetchCategories(); // Refresh categories after adding
-      toast.success("Category created!");
-    } catch (err) {
-      console.error("Failed to create category", err);
-      toast.error("Failed to create category");
-    } finally {
-      setIsCategoryLoading(false);
-    }
-  };
+  const { user } = useStateContext();
+  const userId = user?.id;
+  const categoriesQuery = useCategories(userId);
 
   // Sorted and trimmed category names for better display
-  const sortedCategories = categories
-    .map((category) => category.name?.trim())
+  const sortedCategories = categoriesQuery.data
+    .map((category: Category) => category.name?.trim())
     .filter(Boolean) // Remove falsy values such as empty strings
     .sort();
 
@@ -114,19 +48,24 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
         </SelectTrigger>
         <SelectContent>
           {/* Check if there are categories and render accordingly */}
+          <SelectItem value="null">
+            No Category
+          </SelectItem>
           {sortedCategories.length > 0 ? (
-            sortedCategories.map((name) => (
-              <SelectItem key={name} value={name}>
-                {name}
-              </SelectItem>
+            sortedCategories.map((name: string) => (
+              <>
+                <SelectItem key={name} value={name}>
+                  {name}
+                </SelectItem>
+              </>
             ))
           ) : (
             <SelectItem value="no-categories" disabled>
               No categories available
             </SelectItem>
           )}
-
-          {/* Add Category Button */}
+          {/* 
+          Add Category Button
           <div className="px-4 py-2">
             <Button
               variant="outline"
@@ -136,7 +75,7 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
             >
               + Add Category
             </Button>
-          </div>
+          </div> */}
         </SelectContent>
       </Select>
 
@@ -148,7 +87,7 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
           if (!open) setNewCategory(""); // Clear input when modal is closed
         }}
       >
-        <DialogContent>
+        {/* <DialogContent>
           <DialogHeader>
             <DialogTitle>Add a new Category</DialogTitle>
           </DialogHeader>
@@ -162,13 +101,13 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
           </div>
           <DialogFooter>
             <Button
-              onClick={handleCreateCategory}
+              // onClick={handleCreateCategory}
               disabled={isCategoryLoading || !newCategory.trim()}
             >
               {isCategoryLoading ? "Creating..." : "Create"}
             </Button>
           </DialogFooter>
-        </DialogContent>
+        </DialogContent> */}
       </Dialog>
     </div>
   );

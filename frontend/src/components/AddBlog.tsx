@@ -8,21 +8,21 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { ChangeEvent, useState } from "react";
-import axios from "axios";
+import { ChangeEvent, useState } from "react"
 import toast from "react-hot-toast";;
 import { CategorySelect } from "./CategorySelection";
 import { Button } from "@/components/ui/button";
+import { useCategoryMutations } from "@/api/useMutation";
+import { useStateContext } from "@/lib/ContextProvider";
 
 export const CreateBlog = () => {
+    const { user } = useStateContext();
+    const userId = user?.id;
     const [title, setTitle] = useState("");
     const [url, setUrl] = useState("");
     const [category, setCategory] = useState("");
     const [isRead, setIsRead] = useState(false);
-    const [loading, setLoading] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
-    const token = localStorage.getItem("token");
-    const userId = localStorage.getItem("user");
 
     const handleTitleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setTitle(e.target.value);
@@ -54,35 +54,14 @@ export const CreateBlog = () => {
         setCategory("");
         setIsRead(false);
     };
-
+    const { addBlogMutation } = useCategoryMutations(userId);
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validateForm()) return;
-
-        setLoading(true);
         try {
-            await axios.post(`${import.meta.env.VITE_BASE_URL}/add`, {
-                title,
-                url,
-                categoryName: category.toLowerCase(),
-                isRead,
-                userId
-            },
-                {
-                    headers: {
-                        Authorization: `${token}`,  // Pass the token in the Authorization header
-                    },
-                }).then(() => {
-                    toast.success("Blog added successfully!");
-                    resetForm();
-                    setDialogOpen(false);
-                    window.location.reload();
-                })
-        } catch (error: unknown) {
-            console.error("Error adding blog:", error);
-            toast.error("Error adding blog :(");
-        } finally {
-            setLoading(false);
+            addBlogMutation.mutateAsync({ url, title, isRead, categoryName: category }).then(() => resetForm())
+        } catch (error) {
+
         }
     };
 
@@ -110,7 +89,7 @@ export const CreateBlog = () => {
                                 value={title}
                                 className="col-span-3"
                                 onChange={handleTitleChange}
-                                disabled={loading}
+                                disabled={addBlogMutation.isPending}
                                 required
                             />
                         </div>
@@ -124,7 +103,7 @@ export const CreateBlog = () => {
                                 value={url}
                                 className="col-span-3"
                                 onChange={handleUrlChange}
-                                disabled={loading}
+                                disabled={addBlogMutation.isPending}
                                 required
                                 type="url"
                                 placeholder="https://example.com"
@@ -151,7 +130,7 @@ export const CreateBlog = () => {
                                 onChange={handleDropdownChange}
                                 className="col-span-3"
                                 aria-label="Mark blog as read or unread"
-                                disabled={loading}
+                                disabled={addBlogMutation.isPending}
                             >
                                 <option value="true">Yes</option>
                                 <option value="false">No</option>
@@ -160,8 +139,8 @@ export const CreateBlog = () => {
                     </div>
 
                     <DialogFooter>
-                        <Button type="submit" disabled={loading} aria-busy={loading}>
-                            {loading ? (
+                        <Button type="submit" disabled={addBlogMutation.isPending} aria-busy={addBlogMutation.isPending}>
+                            {addBlogMutation.isPending ? (
                                 <div className="flex items-center gap-2">
                                     <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
                                     Submitting...

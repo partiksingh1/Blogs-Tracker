@@ -1,6 +1,6 @@
 // SideBarCategory/CategoryList.tsx
 import { SidebarMenuSub } from "@/components/ui/sidebar";
-import { Category } from "@/types/category";
+import { Category, Tag } from "@/types/category";
 // import { CategoryItem, TagItem } from "./TagItem";
 // import { AddCategoryRow } from "./AddCategoryRow";
 import { useState } from "react";
@@ -8,12 +8,12 @@ import { useStateContext } from "@/lib/ContextProvider";
 import { TagItem } from "./TagItem";
 
 interface Props {
-    categories: Category[];
+    tags: Tag[];
     // onAdd: (name: string) => void;
     // isAdding: boolean;
 }
 
-export const TagList = ({ categories }: Props) => {
+export const TagList = ({ tags }: Props) => {
     const { user } = useStateContext();
     const userId = user?.id;
     const [editingCategoryId, setEditingCategoryId] = useState<String | null>(null);
@@ -22,15 +22,12 @@ export const TagList = ({ categories }: Props) => {
     //     if (!confirm("Are you sure you want to delete this category?")) return;
     //     deleteCategory(categoryId)
     // }
+    console.log("tags are ", tags)
     return (
         <SidebarMenuSub>
-            {categories.map((category) => (
+            {tags.map((tag) => (
                 <TagItem
-                    key={category.id}
-                    category={category}
-                    isEditing={editingCategoryId === category.id}
-                    onStartEdit={() => setEditingCategoryId(category.id)}
-                    onCancelEdit={() => setEditingCategoryId(null)}
+                    tag={tag}
                 // onDelete={() => handleDelete(category.id)}
                 />
             ))}
