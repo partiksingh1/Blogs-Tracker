@@ -1,20 +1,20 @@
-// SideBarCategory/SideBarCategory.tsx
 import {
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
 import { CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Folder, ChevronRight } from "lucide-react";
 import { useStateContext } from "@/lib/ContextProvider";
-import { useCategories } from "../../api/useCategory";
 import { useCategoryMutations } from "../../api/useMutation";
 import { CategoryList } from "./CategoryList";
+import { useCategories } from "@/api/useQueries";
 
 export const SideBarCategory = () => {
-    const { user } = useStateContext();
+    const { user, token } = useStateContext();
     const userId = user?.id;
 
-    const categoriesQuery = useCategories(userId);
+    const categoriesQuery = useCategories(userId, token as string);
     const { addCategory } = useCategoryMutations(userId);
 
     if (categoriesQuery.isLoading) return null;
@@ -30,11 +30,17 @@ export const SideBarCategory = () => {
             </CollapsibleTrigger>
 
             <CollapsibleContent>
-                <CategoryList
-                    categories={categoriesQuery.data ?? []}
-                    onAdd={(name: any) => addCategory.mutate(name)}
-                    isAdding={addCategory.isPending}
-                />
+                {categoriesQuery.isLoading ? (
+                    <>
+                        <SidebarMenuSkeleton />
+                    </>
+                ) : (
+                    <CategoryList
+                        categories={categoriesQuery.data ?? []}
+                        onAdd={(name: any) => addCategory.mutate(name)}
+                        isAdding={addCategory.isPending}
+                    />
+                )}
             </CollapsibleContent>
         </SidebarMenuItem>
     );

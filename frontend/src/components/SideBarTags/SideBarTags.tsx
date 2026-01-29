@@ -1,28 +1,25 @@
-// SideBarCategory/SideBarCategory.tsx
 import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
-import { Folder, ChevronRight } from "lucide-react";
+import { ChevronRight, HashIcon } from "lucide-react";
 import { useStateContext } from "@/lib/ContextProvider";
-import { useTags } from "../../api/useTags";
 import { TagList } from "./TagList";
+import { useTags } from "@/api/useQueries";
 
 export const SideBarTags = () => {
-    const { user } = useStateContext();
+    const { user, token } = useStateContext();
     const userId = user?.id;
 
-    const tagsQuery = useTags(userId);
-    // const { addCategory } = useCategoryMutations(userId);
-
+    const tagsQuery = useTags(userId, token as string);
     if (tagsQuery.isLoading) return false;
 
     return (
         <SidebarMenuItem>
             <CollapsibleTrigger asChild>
                 <SidebarMenuButton className="cursor-pointer">
-                    <Folder />
+                    <HashIcon />
                     <span>Tags</span>
                     <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
@@ -30,9 +27,7 @@ export const SideBarTags = () => {
 
             <CollapsibleContent>
                 <TagList
-                    tags={tagsQuery.data.tags}
-                // onAdd={(name: any) => addCategory.mutate(name)}
-                // isAdding={addCategory.isPending}
+                    tags={tagsQuery.data?.tags}
                 />
             </CollapsibleContent>
         </SidebarMenuItem>

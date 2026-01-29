@@ -1,4 +1,4 @@
-import { ChevronUp, HomeIcon, } from "lucide-react"
+import { ChevronUp } from "lucide-react"
 
 import {
     Sidebar,
@@ -17,7 +17,6 @@ import { useStateContext } from "@/lib/ContextProvider";
 import { SideBarCategory } from "./SideBarCategory/SideBarCategory";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import { SideBarTags } from "./SideBarTags/SideBarTags";
-// const username = ();
 
 export function AppSidebar() {
     const navigate = useNavigate();
@@ -34,12 +33,12 @@ export function AppSidebar() {
                     <SidebarGroupContent>
                         <SidebarMenu>
                             {/* home */}
-                            <SidebarMenuItem>
+                            {/* <SidebarMenuItem>
                                 <SidebarMenuButton onClick={() => navigate("/home")}>
                                     <HomeIcon />
                                     <span>Home</span>
                                 </SidebarMenuButton>
-                            </SidebarMenuItem>
+                            </SidebarMenuItem> */}
 
                             {/* Categories */}
                             <Collapsible defaultOpen className="group/collapsible">

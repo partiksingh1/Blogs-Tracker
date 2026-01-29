@@ -4,127 +4,159 @@ import { Badge } from "@/components/ui/badge"
 import { Link, useNavigate } from "react-router-dom"
 import { useEffect } from "react"
 import { useStateContext } from "@/lib/ContextProvider"
+import { ModeToggle } from "@/components/ToggleTheme"
+import toast from "react-hot-toast"
 
 export default function LandingPage() {
     const navigate = useNavigate();
-    const { setUser } = useStateContext();
-    // Load Google Identity Script
+    const { user, setUser, loading } = useStateContext();
+    console.log("user is ", user);
+
+
+    // ---------- HANDLE GOOGLE RESPONSE ----------
+    const handleGoogleLogin = async (response: any) => {
+        try {
+            if (!response.credential) {
+                console.error("No credential received");
+                return;
+            }
+
+            const res = await fetch(
+                `${import.meta.env.VITE_BASE_URL}/auth/google`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ credential: response.credential }),
+                }
+            );
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message);
+            toast.success(`Welcome, ${user?.username}`)
+            localStorage.setItem("token", data.token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            setUser(data.user);
+
+            navigate("/dashboard");
+        } catch (err) {
+            console.error("Google login failed:", err);
+            alert("Google login failed");
+        }
+    };
+
+    // ---------- LOAD GOOGLE SCRIPT ----------
     useEffect(() => {
-        /* global google */
         const script = document.createElement("script");
         script.src = "https://accounts.google.com/gsi/client";
         script.async = true;
         script.defer = true;
-        document.body.appendChild(script);
 
         script.onload = () => {
-            if (window.google) {
-                window.google.accounts.id.initialize({
-                    client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-                    callback: handleGoogleLogin
-                });
-            }
-        };
-    }, []);
-
-    // ----------- HANDLE GOOGLE LOGIN RESPONSE -----------
-    const handleGoogleLogin = async (response: any) => {
-        try {
-            const res = await fetch(import.meta.env.VITE_BASE_URL + "/auth/google", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ credential: response.credential })
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(data.message || "Google login failed");
+            if (!window.google) {
+                console.error("Google GSI not available");
                 return;
             }
 
-            // Save auth info
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            setUser(data.user)
-            navigate("/dashboard");
-        } catch (error) {
-            console.error("Google login error:", error);
-            alert("Something went wrong during Google login");
-        }
-    };
+            window.google.accounts.id.initialize({
+                client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+                callback: handleGoogleLogin,
+            });
 
-    // Trigger Google login popup
-    const handleGoogleClick = () => {
-        window.google.accounts.id.prompt(); // Show Google popup
-    };
+            window.google.accounts.id.renderButton(
+                document.getElementById("google-signin-btn"),
+                {
+                    theme: "outline",
+                    size: "large",
+                    text: "signin_with",
+                    shape: "rectangular",
+                    width: 280,
+                }
+            );
+        };
+
+        document.body.appendChild(script);
+    }, []);
+
 
     const features = [
         {
-            title: "Fast Setup",
-            description: "Create your account in under 30 seconds and start blogging immediately",
+            title: "1. Quick Setup",
+            description: "Create your account in seconds using Google Sign-In.",
             image: "/c1.png?height=400&width=600",
         },
         {
-            title: "Beautiful Dashboard",
-            description: "Your content organized in a clean, intuitive interface that makes management effortless",
+            title: "2. Organized Dashboard",
+            description: "Manage all your content in a clean, intuitive dashboard designed for efficiency.",
             image: "/hero.png?height=400&width=600",
         },
         {
-            title: "Organize Content Easily",
-            description: "Easily organize your blogs/articles by adding tags and categories",
+            title: "3. Effortless Content Management",
+            description: "Organize blogs and articles with multiple tags and categories for better structure and discovery.",
             image: "/c3.png?height=400&width=600",
         },
         {
-            title: "AI Summaries",
-            description: "Get AI-generated summaries of your content",
+            title: "4. AI-Powered Summaries",
+            description: "Generate smart AI summaries by scraping links and delivering the most relevant insights instantly.",
             image: "/c2.png?height=400&width=600",
         },
+
     ]
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/50 to-indigo-50/30">
+        <div className="min-h-screen">
 
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <header className="top-0 border-b-2">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600">
-                                <Sparkles className="h-5 w-5 text-white" />
-                            </div>
-                            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        <div className="flex items-center space-x-2 p-3 m-2 rounded-md">
+                            <Sparkles className="h-7 w-7" />
+                            <span className="text-3xl font-bold">
                                 BlogZone
                             </span>
                         </div>
 
                         <div className="flex items-center space-x-4">
-                            <Button
-                                asChild
-                                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                            >
-                                <Link to="/dashboard">
-                                    Get Started
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                            </Button>
+                            <div className="flex items-end space-x-4">
+                                <ModeToggle />
+                            </div>
+                            {
+                                !user ? (
+                                    <Button
+                                        className="cursor-pointer"
+                                    >Sign In
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        asChild
+                                        className=""
+                                    >
+
+                                        <Link to="/dashboard">
+                                            Dashboard
+                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                )
+                            }
                         </div>
+
                     </div>
                 </div>
             </header>
 
             {/* Hero Section */}
-            <section className="relative overflow-hidden py-20 sm:py-32">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            <section className="pt-10">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-4xl text-center">
-                        <Badge variant="secondary" className="mb-6 bg-blue-50 text-blue-700 hover:bg-blue-100">
+                        <Badge variant="secondary" className="mb-6">
                             <Sparkles className="mr-2 h-3 w-3" />
-                            AI-Powered Blog Management
+                            AI-Integrated Blog Management
                         </Badge>
 
-                        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
+                        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
                             Blog management,{" "}
-                            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                            <span className="text-gray-500">
                                 simplified
                             </span>
                         </h1>
@@ -135,21 +167,17 @@ export default function LandingPage() {
                         </p>
 
                         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                            {/* GOOGLE LOGIN BUTTON */}
-                            <Button
-                                onClick={handleGoogleClick}
-                                className="bg-white text-black border border-gray-300 hover:bg-gray-100"
-                            >
-                                <img
-                                    src="https://developers.google.com/identity/images/g-logo.png"
-                                    alt="google-logo"
-                                    className="w-5 h-5 mr-2"
-                                />
-                                Sign in with Google
-                            </Button>
-
+                            {loading ? null : !user ? (
+                                <div id="google-signin-btn" className="flex justify-center" />
+                            ) : (
+                                <div className="bg-black text-white border-white border p-2 m-1 rounded-md">
+                                    <span>
+                                        👋🏼 Hi, {user.username}
+                                    </span>
+                                </div>
+                            )}
                             <Button className="bg-white text-black border-black hover:bg-white outline-dotted">
-                                <a href="#features">How?</a>
+                                <a href="#features">FAQs</a>
                             </Button>
                         </div>
                     </div>
@@ -157,67 +185,57 @@ export default function LandingPage() {
                     {/* Hero Image */}
                     <div className="mt-16 relative">
                         <div className="relative mx-auto max-w-6xl">
-                            <div className="absolute bg-gradient-to-t from-white via-transparent to-transparent" />
+                            <div className="absolute bg-linear-to-t from-white via-transparent to-transparent" />
                             <div className="relative overflow-hidden rounded-xl">
                                 <img
                                     src="/hero.png"
                                     alt="BlogZone Dashboard Preview"
-                                    width={1200}
-                                    height={600}
+                                    width={1000}
+                                    height={500}
                                     className="w-full h-auto mask-image-gradient"
                                 />
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Features */}
-            <section id="features" className="py-20 sm:py-32 bg-white">
-                <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+            < section id="features" className="sm:py-10" >
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-2xl text-center mb-16">
-                        <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">How it works</h2>
-                        <p className="mt-4 text-lg text-gray-600">
-                            From setup to publishing, every step is designed to be intuitive and powerful
-                        </p>
+                        <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How it works</h2>
                     </div>
-
-                    <div className="space-y-24">
-                        {features.map((feature, index) => {
-                            const isEven = index % 2 === 0;
-
-                            return (
-                                <div
-                                    key={feature.title}
-                                    className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-16 ${isEven ? "" : "lg:flex-row-reverse"}`}
-                                >
-                                    <div className="flex-1 space-y-6">
-                                        <h3 className="text-2xl font-bold text-gray-900 sm:text-3xl">{feature.title}</h3>
-                                        <p className="text-lg text-gray-600 leading-relaxed">{feature.description}</p>
-                                    </div>
-
-                                    <div className="flex-1">
-                                        <div className="relative overflow-hidden rounded-2xl shadow-xl ring-1 ring-gray-900/10">
-                                            <img
-                                                src={feature.image || ""}
-                                                alt={`${feature.title} preview`}
-                                                width={600}
-                                                height={400}
-                                                className="w-full h-auto object-cover opacity-90"
-                                            />
-                                        </div>
-                                    </div>
+                    <div className="mt-20 flex flex-col gap-16 px-4 md:px-16">
+                        {features.map((feature, index) => (
+                            <div
+                                key={index}
+                                className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12"
+                            >
+                                {/* Left: Title + Description */}
+                                <div className="md:w-1/2 flex flex-col justify-center items-center text-center md:text-left">
+                                    <h2 className="text-2xl md:text-4xl font-bold mb-4 ">{feature.title}</h2>
+                                    <p className="text-base md:text-xl text-center mt-5">{feature.description}</p>
                                 </div>
-                            );
-                        })}
+
+                                {/* Right: Image */}
+                                <div className="md:w-1/2 flex justify-center md:justify-center">
+                                    <img
+                                        src={feature.image}
+                                        alt={feature.title}
+                                        className="w-full max-w-md rounded-lg shadow-lg object-cover"
+                                    />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-white py-12 text-center">
+            < footer className="bg-gray-900 text-white py-12 text-center" >
                 <p>&copy; {new Date().getFullYear()} BlogZone. All rights reserved.</p>
-            </footer>
-        </div>
+            </footer >
+        </div >
     );
 }

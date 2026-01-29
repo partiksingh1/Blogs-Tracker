@@ -1,4 +1,3 @@
-// SideBarCategory/CategoryList.tsx
 import { SidebarMenuSub } from "@/components/ui/sidebar";
 import { Category } from "@/types/category";
 import { CategoryItem } from "./CategoryItem";

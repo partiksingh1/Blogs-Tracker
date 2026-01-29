@@ -1,17 +1,8 @@
 import { Blog } from "@/types/blog";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
-import { ExternalLink, InfoIcon, Loader2, Plus, Stars, Trash2Icon } from "lucide-react";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogFooter,
-    DialogTitle,
-} from "./ui/dialog";
+import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "./ui/input";
-import toast from "react-hot-toast";
 import {
     Select,
     SelectContent,
@@ -19,8 +10,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useCallback, useState, memo, useEffect } from "react";
-import axios from "axios";
+import { useCategoryMutations } from "@/api/useMutation";
+import { useStateContext } from "@/lib/ContextProvider";
+import toast from "react-hot-toast";
 
 const colors = [
     "bg-red-600", "bg-red-700", "bg-red-800",
@@ -47,318 +39,26 @@ function getTagColor(tagName: string): string {
     const index = Math.abs(hash) % colors.length;
     return colors[index];
 }
-
-interface BlogCardProps {
-    blog: Blog;
-    onStatusChange: (blogId: string, newStatus: boolean) => void;
-    onDelete: (blogId: string) => void;
-    onTagDelete: (blogId: string, tagName: string) => void;
+type BlogProps = {
+    blog: Blog
 }
-
-// Dialog types for unified dialog state
-type DialogType = "delete" | "addTag" | "deleteTag" | "summarize" | "aiText" | null;
-
-function DeleteDialog({
-    isOpen,
-    onClose,
-    onDelete,
-    isLoading,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    onDelete: () => void;
-    isLoading: boolean;
-}) {
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Delete Blog</DialogTitle>
-                </DialogHeader>
-                <p>Are you sure you want to delete this blog?</p>
-                <DialogFooter>
-                    <Button onClick={onClose} variant="secondary" className="mr-2">
-                        Cancel
-                    </Button>
-                    <Button onClick={onDelete} className="bg-red-600" disabled={isLoading} aria-label="Confirm delete blog">
-                        {isLoading ? <Loader2 className="animate-spin" /> : "Delete"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function AddTagDialog({
-    isOpen,
-    onClose,
-    onAddTag,
-    isLoading,
-    tag,
-    setTag,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    onAddTag: () => void;
-    isLoading: boolean;
-    tag: string;
-    setTag: (tag: string) => void;
-}) {
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Add a Tag</DialogTitle>
-                </DialogHeader>
-                <Input
-                    id="tag"
-                    value={tag}
-                    className="col-span-2"
-                    onChange={(e) => setTag(e.target.value)}
-                    aria-label="Tag name"
-                    autoFocus
-                />
-                <DialogFooter>
-                    <Button onClick={onClose} variant="secondary" className="mr-2">
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={onAddTag}
-                        className={`bg-green-600 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                        disabled={isLoading}
-                        aria-label="Add tag"
-                    >
-                        {isLoading ? <Loader2 className="animate-spin" /> : "Add"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function DeleteTagDialog({
-    isOpen,
-    onClose,
-    onDeleteTag,
-    isLoading,
-    selectedTag,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    onDeleteTag: () => void;
-    isLoading: boolean;
-    selectedTag: string;
-}) {
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <p>Delete tag "{selectedTag}"?</p>
-                <div className="flex justify-center">
-                    <Button
-                        onClick={onDeleteTag}
-                        className="bg-red-600 w-1/2"
-                        disabled={isLoading}
-                        aria-label={`Delete tag ${selectedTag}`}
-                    >
-                        {isLoading ? <Loader2 className="animate-spin" /> : "Delete"}
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function SummarizeDialog({
-    isOpen,
-    onClose,
-    onSummarize,
-    isLoading,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    onSummarize: () => void;
-    isLoading: boolean;
-}) {
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Do you want to summarize this blog using AI?</DialogTitle>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button onClick={onClose} variant="secondary" className="mr-2" aria-label="Cancel summarization">
-                        Cancel
-                    </Button>
-                    <Button
-                        onClick={onSummarize}
-                        className={`bg-blue-600 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                        disabled={isLoading}
-                        aria-label="Confirm AI summarization"
-                    >
-                        {isLoading ? <Loader2 className="animate-spin" /> : "Sure, Do it"}
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-function AiTextDialog({
-    isOpen,
-    onClose,
-    aiText,
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    aiText: string;
-}) {
-    return (
-        <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent>
-                <p>{aiText || "No summary available."}</p>
-            </DialogContent>
-        </Dialog>
-    );
-}
-
-export const BlogCard = memo(function BlogCard({
-    blog,
-    onStatusChange,
-    onDelete,
-    onTagDelete,
-}: BlogCardProps) {
-    const token = localStorage.getItem("token")
-
-    // Unified dialog state
-    const [openDialog, setOpenDialog] = useState<DialogType>(null);
-    const [isStatusLoading, setIsStatusLoading] = useState(false)
-    const [isTagLoading, setIsTagLoading] = useState(false)
-    const [isLoading, setIsLoading] = useState(false)
-    const [aiText, setAiText] = useState("");
-    // Tag states
-    const [tag, setTag] = useState("");
-    const [selectedTag, setSelectedTag] = useState<string>("");
-
-    // Local status derived from blog prop to avoid stale state
+export const BlogCard = ({ blog }: BlogProps) => {
+    const { user } = useStateContext();
+    const userId = user?.id;
+    const { updateBlogMutation } = useCategoryMutations(userId)
     const status = blog.isRead ? "READ" : "UNREAD";
-    useEffect(() => {
-        console.log("BlogCard updated:", blog); // Check if this component re-renders
-    }, [blog]);
-
     // Handlers
-    const handleStatusChange = useCallback(
-        async (newStatus: string) => {
-            try {
-                setIsStatusLoading(true)
-                onStatusChange(blog.id, newStatus === "READ");
-                toast.success("Status updated successfully!");
-            } catch (error) {
-                console.error("Error updating status:", error);
-                toast.error("Failed to update status.");
-            }
-            setIsStatusLoading(true)
-        },
-        [onStatusChange, blog.id]
-    );
-
-    const handleDelete = useCallback(async () => {
-        try {
-            onDelete(blog.id);
-            toast.success("Blog deleted successfully!");
-        } catch (error) {
-            console.error("Error deleting blog:", error);
-            toast.error("Failed to delete blog.");
-        } finally {
-            setOpenDialog(null);
-        }
-    }, [onDelete, blog.id]);
-
-    const handleAddTag = useCallback(async () => {
-        setIsTagLoading(true)
-        if (!tag.trim()) {
-            toast.error("Tag cannot be empty.");
-            return;
-        }
-        try {
-            await axios.post(
-                `${import.meta.env.VITE_BASE_URL}/add-tag`, { blogId: blog.id, tagName: tag.trim() },
-                {
-                    headers: { Authorization: `${token}` }
-                }
-            ).then(() => {
-                toast.success("Tag added successfully!");
-                setTag("");
-                window.location.reload()
-            })
-        } catch (error) {
-            console.error("Error adding tag:", error);
-            toast.error("Failed to add tag.");
-        } finally {
-            setOpenDialog(null);
-            setIsTagLoading(false)
-        }
-    }, [blog.id, tag, selectedTag, token]);
-    const handleDeleteTag = useCallback(async () => {
-        setIsTagLoading(true);
-        if (!selectedTag) return;
-        try {
-            await axios.delete(
-                `${import.meta.env.VITE_BASE_URL}/delete-tag`,
-                {
-                    headers: { Authorization: `${token}` },
-                    data: { blogId: blog.id, tagName: selectedTag },
-                }
-            );
-            toast.success("Tag deleted successfully!");
-            onTagDelete(blog.id, selectedTag); // Update local state
-        } catch (error) {
-            console.error("Error deleting tag:", error);
-            toast.error("Failed to delete tag.");
-        } finally {
-            setSelectedTag("");
-            setOpenDialog(null);
-            setIsTagLoading(false);
-        }
-    }, [blog.id, selectedTag, onTagDelete, token]);
-
-
-    const handleSummarize = useCallback(async () => {
-        setIsLoading(true);
-        const token = localStorage.getItem("token");
-        try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_BASE_URL}/summarize`,
-                { url: blog.url },
-                { headers: { Authorization: `${token}` } }
-            );
-            console.log(response);  // Log the response to check its structure
-            if (response.status === 200) {
-                console.log("response is", response.data.summary);
-
-                setAiText(response.data.summary);
-                setOpenDialog("aiText");
+    const handleStatusChange = (blogId: string, newValue: string) => {
+        if (status == newValue) {
+            toast.success("Status updated!")
+        } else {
+            if (newValue == "READ") {
+                updateBlogMutation.mutateAsync({ status: true, blogId })
             } else {
-                toast.error("Failed to summarize blog.");
+                updateBlogMutation.mutateAsync({ status: false, blogId })
             }
-        } catch (error) {
-            console.error("Error summarizing:", error);
-            toast.error("Failed to summarize.");
-        } finally {
-            // if (openDialog === "summarize") setOpenDialog(null);
-            setIsLoading(false);
         }
-    }, [blog.url]);
-    // const handleSummarize = () => {
-    //     setIsLoading(true);
-    //     // Mock API call
-    //     setTimeout(() => {
-    //         setAiText("This is a sample summary generated by AI. The content would normally come from your /summarize endpoint.");
-    //         setOpenDialog("aiText");
-    //         setIsLoading(false);
-    //     }, 1000);
-    // };
-
-    // No need for effect to refetch blogs here; redux thunk actions update store on success
+    }
 
     return (
         <Card className="w-full p-4 transform transition-all duration-300 hover:shadow-lg hover:scale-100">
@@ -380,17 +80,8 @@ export const BlogCard = memo(function BlogCard({
                     >
                         <ExternalLink />
                     </Button>
-                    {/* <Button
-                        onClick={() => setOpenDialog("summarize")}
-                        className="bg-white"
-                        aria-label="Summarize blog using AI"
-                    >
-                        <InfoIcon color="black" />
-                        <span className="block sm:hidden">AI</span>
-                        <span className="hidden sm:inline">Summarize with AI</span>
-                    </Button> */}
-                    <Select value={status} onValueChange={handleStatusChange} disabled={isStatusLoading} aria-label="Blog read status">
-                        <SelectTrigger className="w-[120px] ml-4">
+                    <Select value={status} onValueChange={(newValue) => handleStatusChange(blog.id, newValue)} aria-label="Blog read status">
+                        <SelectTrigger className="w-30 ml-4">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -405,74 +96,12 @@ export const BlogCard = memo(function BlogCard({
                 <div className="flex flex-wrap overflow-hidden">
                     <div className="flex flex-row flex-wrap">
                         {(blog.tags ?? []).map((tag) => (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setSelectedTag(tag.name);
-                                    setOpenDialog("deleteTag");
-                                }}
-                                key={tag.name}
-                                className="m-1"
-                                aria-label={`Delete tag ${tag.name}`}
-                            >
-                                <Badge className={` ${getTagColor(tag.name)}`}>{tag.name}</Badge>
-                            </button>
+                            <Badge className={`m-1 ${getTagColor(tag.name)}`}>{tag.name}</Badge>
+
                         ))}
-
-                        {/* <button
-                            type="button"
-                            onClick={() => setOpenDialog("addTag")}
-                            className="m-1 hover:bg-gray-300 rounded-full"
-                            aria-label="Add tag"
-                        >
-                            <Plus />
-                        </button> */}
-
-                        {/* <button
-                            type="button"
-                            onClick={() => setOpenDialog("delete")}
-                            className="m-1 hover:bg-gray-300 rounded text-red-700"
-                            aria-label="Delete blog"
-                        >
-                            <Trash2Icon />
-                        </button> */}
                     </div>
                 </div>
             </CardFooter>
-
-            {/* Dialogs */}
-            <DeleteDialog
-                isOpen={openDialog === "delete"}
-                onClose={() => setOpenDialog(null)}
-                onDelete={handleDelete}
-                isLoading={isLoading}
-            />
-            <AddTagDialog
-                isOpen={openDialog === "addTag"}
-                onClose={() => setOpenDialog(null)}
-                onAddTag={handleAddTag}
-                isLoading={isTagLoading}
-                tag={tag}
-                setTag={setTag}
-            />
-            <DeleteTagDialog
-                isOpen={openDialog === "deleteTag"}
-                onClose={() => setOpenDialog(null)}
-                onDeleteTag={handleDeleteTag}
-                isLoading={isTagLoading}
-                selectedTag={selectedTag}
-            />
-            <SummarizeDialog
-                isOpen={openDialog === "summarize"}
-                onClose={() => setOpenDialog(null)}
-                onSummarize={handleSummarize}
-                isLoading={isLoading}
-            />
-            <AiTextDialog
-                isOpen={openDialog === "aiText"}
-                onClose={() => setOpenDialog(null)}
-                aiText={aiText || "Summary not available."}
-            />
         </Card>
     );
-});
+};
