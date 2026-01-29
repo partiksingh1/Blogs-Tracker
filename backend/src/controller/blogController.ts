@@ -5,9 +5,9 @@ const prisma = new PrismaClient();
 
 // Single endpoint for dashboard data
 export const GetDashboardData = async (req: Request, res: Response): Promise<any> => {
-    const userId = req.params.userId;
+    const authorId = req.params.userId;
 
-    if (!userId) {
+    if (!authorId) {
         return res.status(400).json({
             message: "Invalid user, please provide a userId"
         })
@@ -17,20 +17,20 @@ export const GetDashboardData = async (req: Request, res: Response): Promise<any
         // Single query to get all needed data
         const [blogs, categories] = await Promise.all([
             prisma.blog.findMany({
-                where: { userId },
+                where: { authorId },
                 select: {
                     id: true,
                     url: true,
                     title: true,
                     isRead: true,
-                    categoryName: true,
-                    tagNames: true,
+                    categoryId: true,
+                    tags: true,
                     createdAt: true,
                 },
                 orderBy: { createdAt: 'desc' }
             }),
             prisma.category.findMany({
-                where: { userId },
+                where: { userId: authorId },
                 select: { id: true, name: true }
             }),
         ]);
@@ -53,66 +53,74 @@ export const GetDashboardData = async (req: Request, res: Response): Promise<any
         })
     }
 }
-
 export const AddBlog = async (req: Request, res: Response): Promise<any> => {
     const validation = BlogSchema.safeParse(req.body);
     if (!validation.success) {
         return res.status(400).json({
             message: "blog addition validation error",
             err: validation.error.format()
-        })
+        });
     }
 
     try {
         const { url, title, isRead, categoryName, userId } = validation.data;
 
-        // Use transaction for consistency
         const result = await prisma.$transaction(async (tx) => {
-            // Upsert category
-            const category = await tx.category.upsert({
-                where: {
-                    userId_name: { userId, name: categoryName ? categoryName.toLowerCase() : "" }
-                },
-                update: {},
-                create: {
-                    name: categoryName ? categoryName.toLowerCase() : "",
-                    userId
-                }
-            });
+            let category = null;
 
-            // Create blog with denormalized data
+            // If categoryName is provided, try to find or create it
+            if (categoryName && categoryName.trim() !== "") {
+                const cleanName = categoryName.trim().toLowerCase();
+
+                // Try to find existing category
+                category = await tx.category.findFirst({
+                    where: { name: cleanName, userId }
+                });
+
+                // // If no category found → create one
+                // if (!category) {
+                //     category = await tx.category.create({
+                //         data: {
+                //             name: cleanName,
+                //             userId
+                //         }
+                //     });
+                // }
+            }
+
+            // Now create blog
             const blog = await tx.blog.create({
                 data: {
                     url,
                     title,
-                    userId,
-                    isRead: isRead || false,
-                    categoryName: category.name,
-                    tagNames: []
+                    authorId: userId,
+                    isRead: isRead ?? false,
+                    categoryId: category ? category.id : null,  // ❗ correct ID, not name
                 }
             });
 
             return { blog, category };
         });
 
-        res.status(201).json({
+        return res.status(201).json({
             message: "Blog added successfully",
             data: result
-        })
+        });
 
     } catch (error) {
-        res.status(500).json({
+        console.error("AddBlog error:", error);
+        return res.status(500).json({
             message: "Internal server error in adding the blog"
-        })
+        });
     }
-}
+};
 
 export const UpdateBlogStatus = async (req: Request, res: Response): Promise<any> => {
     const { status, blogId } = req.body;
 
     if (!blogId || typeof status !== "boolean") {
         return res.status(400).json({
-            message: "Invalid request — blogId, userId, and status(boolean) are required"
+            message: "Invalid request — blogId, and status(boolean) are required"
         });
     }
 
@@ -133,6 +141,31 @@ export const UpdateBlogStatus = async (req: Request, res: Response): Promise<any
         });
     }
 };
+
+export const GetAllBlogs = async (req: Request, res: Response): Promise<any> => {
+    const authorId = req.params.id;
+    try {
+        const blogs = await prisma.blog.findMany({
+            where: {
+                authorId: authorId
+            },
+            include: {
+                tags: true
+            }
+        })
+        res.status(200).json({
+            message: "Blogs fetched successfully",
+            data: {
+                blogs
+            }
+        })
+    } catch (error) {
+        res.status(500).json({
+            message: "Internal server error while fetching blogs"
+        })
+    }
+
+}
 
 /**
  * Delete Blog
@@ -165,9 +198,9 @@ export const DeleteBlog = async (req: Request, res: Response): Promise<any> => {
  * Add Tag to Blog
  */
 export const AddTagToBlog = async (req: Request, res: Response): Promise<any> => {
-    const { blogId, tagName } = req.body;
+    const { blogId, tagName, userId } = req.body;
 
-    if (!tagName) {
+    if (!tagName || !blogId) {
         return res.status(400).json({ error: 'tagName is required' });
     }
 
@@ -181,18 +214,36 @@ export const AddTagToBlog = async (req: Request, res: Response): Promise<any> =>
             return res.status(404).json({ error: 'Blog not found' });
         }
 
-        // Check if the tag is already in the blog
-        if (blog.tagNames.includes(tagName)) {
-            return res.status(400).json({ error: 'Tag already exists in this blog' });
+        let tag = await prisma.tag.findFirst({
+            where: {
+                name: tagName,
+                userId: userId
+            }
+        })
+        if (!tag) {
+            tag = await prisma.tag.create({
+                data: {
+                    name: tagName,
+                    userId: userId
+                }
+            })
         }
-
         // Add the new tag to the blog
         const updatedBlog = await prisma.blog.update({
             where: { id: blogId },
-            data: { tagNames: [...blog.tagNames, tagName] },
+            data: {
+                tags: {
+                    connect: {
+                        id: tag.id
+                    }
+                }
+            },
+            include: {
+                tags: true
+            }
         });
 
-        return res.status(200).json({ message: 'Tag added successfully', blog: updatedBlog });
+        return res.status(201).json({ message: 'Tag added successfully', blog: updatedBlog });
     } catch (error) {
         console.error('Error adding tag:', error);
         return res.status(500).json({
@@ -203,9 +254,9 @@ export const AddTagToBlog = async (req: Request, res: Response): Promise<any> =>
 };
 
 export const RemoveTagFromBlog = async (req: Request, res: Response): Promise<any> => {
-    const { tagName, blogId } = req.body;
+    const { tagId, blogId } = req.body;
 
-    if (!tagName) {
+    if (!tagId) {
         return res.status(400).json({ error: 'tagName is required' });
     }
 
@@ -218,17 +269,29 @@ export const RemoveTagFromBlog = async (req: Request, res: Response): Promise<an
             return res.status(404).json({ error: 'Blog not found' });
         }
 
-        if (!blog.tagNames.includes(tagName)) {
-            return res.status(400).json({ error: 'Tag not found in this blog' });
+        const tag = await prisma.tag.findFirst({
+            where: {
+                id: tagId
+            }
+        })
+        if (!tag) {
+            return res.status(404).json({
+                error: "Tag not found or does not belong to user",
+            });
         }
-
-        // Remove the tag from the array
-        const updatedTags = blog.tagNames.filter(tag => tag !== tagName);
-
         // Update the blog with the new tag array
         const updatedBlog = await prisma.blog.update({
             where: { id: blogId },
-            data: { tagNames: updatedTags },
+            data: {
+                tags: {
+                    disconnect: {
+                        id: tagId
+                    }
+                }
+            },
+            include: {
+                tags: true
+            }
         });
 
         return res.status(200).json({ message: 'Tag removed successfully', blog: updatedBlog });
@@ -240,3 +303,29 @@ export const RemoveTagFromBlog = async (req: Request, res: Response): Promise<an
         });
     }
 };
+
+export const GetAllTags = async (req: Request, res: Response): Promise<any> => {
+    const userId = req.params.id;
+    try {
+        const tags = await prisma.tag.findMany({
+            where: {
+                userId: userId
+            }
+        })
+        if (!tags) {
+            return res.status(404).json({
+                message: "No Tags"
+            })
+        }
+        res.status(200).json({
+            message: "Tags successfully fetched",
+            tags
+        })
+    } catch (error) {
+        console.error('Error fetching tags:', error);
+        return res.status(500).json({
+            message: 'Internal server error while fetching tags',
+            error: error instanceof Error ? error.message : String(error),
+        });
+    }
+}

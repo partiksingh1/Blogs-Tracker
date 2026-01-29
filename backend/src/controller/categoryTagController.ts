@@ -10,7 +10,8 @@ const prisma = new PrismaClient();
 
 // Create Category
 export const CreateCategory = async (req: Request, res: Response): Promise<any> => {
-    const { userId, name } = req.body;
+    const { userId } = req.params;
+    const { name } = req.body;
 
     if (!userId || !name?.trim()) {
         return res.status(400).json({
@@ -18,24 +19,46 @@ export const CreateCategory = async (req: Request, res: Response): Promise<any> 
         });
     }
 
+    const cleanName = name.trim().toLowerCase();
+
     try {
-        const category = await prisma.category.upsert({
-            where: { userId_name: { userId, name: name.toLowerCase() } },
-            update: {},
-            create: { userId, name: name.toLowerCase() }
+        // 1. Check if category already exists for this user
+        const existing = await prisma.category.findFirst({
+            where: {
+                userId,
+                name: cleanName
+            }
         });
 
-        res.status(201).json({
+        if (existing) {
+            return res.status(400).json({
+                message: "Category already exists for this user",
+                data: existing
+            });
+        }
+
+        // 2. Create category
+        const category = await prisma.category.create({
+            data: {
+                userId,
+                name: cleanName
+            }
+        });
+
+        return res.status(201).json({
             message: "Category created successfully",
             data: category
         });
+
     } catch (error: any) {
-        res.status(500).json({
+        console.error("CreateCategory error:", error);
+        return res.status(500).json({
             message: "Internal server error while creating category",
             error: error.message
         });
     }
 };
+
 
 // Get All Categories for User
 export const GetCategories = async (req: Request, res: Response): Promise<any> => {

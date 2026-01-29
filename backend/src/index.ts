@@ -2,7 +2,6 @@ import express from "express"
 import { userRouter } from "./routes/userRoute.js";
 import dotenv from 'dotenv'
 import cors from 'cors';
-import https from 'https';
 import { aiRouter } from "./routes/aiRoute.js";
 import router from "./routes/blogRoute.js";
 const port = 3000;
@@ -19,21 +18,9 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.get("/", (req, res) => {
-    res.send("Hello world");
-})
 app.use("/api/v1", userRouter)
 app.use("/api/v1", router)
 app.use("/api/v1", aiRouter)
-
-const keepAlive = () => {
-    https.get('https://blogzone-5b2j.onrender.com', (res) => {
-        console.log(`Keep-alive pinged: ${res.statusCode}`);
-    }).on('error', (err) => {
-        console.error(`Error pinging: ${err.message}`);
-    });
-};
-setInterval(keepAlive, 10 * 60 * 1000);
 app.listen(port, () => {
     console.log(`listining on port ${port}`);
 })

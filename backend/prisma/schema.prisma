@@ -11,59 +11,73 @@ model User {
   id         String     @id @default(uuid())
   username   String
   email      String     @unique
-  password   String
   picture    String?
   bio        String?
+  provider   String     @default("google")
+
   blogs      Blog[]
   notes      Note[]
+  categories Category[]
+  tagNames   Tag[]
+
   resetToken String?    @unique
   createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @default(now())
-  Category   Category[]
-
-  @@index([email])
+  updatedAt  DateTime   @updatedAt
 }
 
 model Blog {
-  id            String   @id @default(uuid())
-  userId        String
+  id            String    @id @default(uuid())
   url           String
   title         String?
-  isRead        Boolean  @default(false)
-  categoryName  String?
-  tagNames      String[] @default([]) // Denormalized for quick filtering
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
-  user          User     @relation(fields: [userId], references: [id])
+  content       String?
+  isRead        Boolean   @default(false)
+
+  author        User      @relation(fields: [authorId], references: [id])
+  authorId      String
+
+  category      Category? @relation(fields: [categoryId], references: [id])
+  categoryId    String?
+
+  tags          Tag[]
+
   notes         Note[]
 
-  // Optimized indexes
-  @@index([userId, createdAt])
-  @@index([userId, isRead])
-  @@index([userId, categoryName])
-  @@index([userId, tagNames])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Tag{
+  id            String     @id @default(uuid())
+  name          String
+
+  user          User      @relation(fields:[userId],references:[id])
+  userId        String
+  blogs         Blog[]
 }
 
 model Category {
   id        String   @id @default(uuid())
-  userId    String
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id])
 
-  @@unique([userId, name])
-  @@index([userId])
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  blogs     Blog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Note {
-  id     String @id @default(uuid())
-  blogId String
-  userId String
-  text   String
-  blog   Blog   @relation(fields: [blogId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
+  id        String   @id @default(uuid())
+  content   String
 
-  @@index([blogId])
-  @@index([userId])
+  blog      Blog     @relation(fields: [blogId], references: [id])
+  blogId    String
+
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

@@ -4,7 +4,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const Auth = async (req: Request, res: Response, next: NextFunction) => {
-    const token = (req.header("Authorization")?.replace("Bearer", ''))
+    const token = req.header("Authorization")?.split(" ")[1];
+
+
     if (!token) {
         res.status(403).json({
             message: "No token, pass the token"
@@ -19,11 +21,13 @@ export const Auth = async (req: Request, res: Response, next: NextFunction) => {
                 message: "Access denied, invalid token"
             })
         }
-        else{
+        else {
             next();
         }
     } catch (error) {
-         res.status(500).json({
+        console.log("error is", error);
+
+        res.status(500).json({
             message: "Server error during token verification",
         });
     }
