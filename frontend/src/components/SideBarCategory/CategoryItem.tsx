@@ -1,4 +1,3 @@
-// SideBarCategory/CategoryItem.tsx
 import { useState } from "react";
 import {
     SidebarMenuSubItem,

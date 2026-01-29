@@ -14,6 +14,8 @@ import { CategorySelect } from "./CategorySelection";
 import { Button } from "@/components/ui/button";
 import { useCategoryMutations } from "@/api/useMutation";
 import { useStateContext } from "@/lib/ContextProvider";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
+import { SelectGroup, SelectValue } from "@radix-ui/react-select";
 
 export const CreateBlog = () => {
     const { user } = useStateContext();
@@ -30,9 +32,10 @@ export const CreateBlog = () => {
     const handleUrlChange = (e: ChangeEvent<HTMLInputElement>) => {
         setUrl(e.target.value);
     };
-    const handleDropdownChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        setIsRead(e.target.value === "true");
+    const handleDropdownChange = (value: boolean) => {
+        setIsRead(value);
     };
+
 
     const validateForm = () => {
         if (!title.trim()) {
@@ -59,7 +62,10 @@ export const CreateBlog = () => {
         e.preventDefault();
         if (!validateForm()) return;
         try {
-            addBlogMutation.mutateAsync({ url, title, isRead, categoryName: category }).then(() => resetForm())
+            addBlogMutation.mutateAsync({ url, title, isRead, categoryName: category }).then(() => {
+                resetForm()
+                setDialogOpen(false);
+            })
         } catch (error) {
 
         }
@@ -73,7 +79,7 @@ export const CreateBlog = () => {
                 </Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
                     <DialogTitle>Add a new blog</DialogTitle>
                 </DialogHeader>
@@ -119,22 +125,26 @@ export const CreateBlog = () => {
                                 onChange={setCategory}
                             />
                         </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
+                        <div className="grid grid-cols-4 items-center gap-4 cursor-pointer">
                             <Label htmlFor="isRead" className="text-right">
                                 Is Read?
                             </Label>
-                            <select
-                                id="isRead"
-                                name="isRead"
+                            <Select
                                 value={isRead.toString()}
-                                onChange={handleDropdownChange}
-                                className="col-span-3"
-                                aria-label="Mark blog as read or unread"
-                                disabled={addBlogMutation.isPending}
+                                onValueChange={(value) => handleDropdownChange(value === "true")}
                             >
-                                <option value="true">Yes</option>
-                                <option value="false">No</option>
-                            </select>
+                                <SelectTrigger aria-invalid>
+                                    <SelectValue placeholder="Mark as Read / Unread" />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectItem value="true">Read</SelectItem>
+                                        <SelectItem value="false">Unread</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+
                         </div>
                     </div>
 
@@ -152,6 +162,6 @@ export const CreateBlog = () => {
                     </DialogFooter>
                 </form>
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 };

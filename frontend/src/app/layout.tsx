@@ -3,6 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar"
 import { ModeToggle } from "@/components/ToggleTheme";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { useSearchContext } from "@/lib/SearchProvider";
 
 export default function Layout({
     children,
@@ -11,6 +12,7 @@ export default function Layout({
     children: React.ReactNode;
     header?: React.ReactNode;
 }) {
+    const { search, setSearch } = useSearchContext();
     return (
         <SidebarProvider>
             <AppSidebar />
@@ -22,8 +24,8 @@ export default function Layout({
                     <div className="w-1/2">
                         <Input
                             placeholder="Search blogs"
-                            //   value={search}
-                            //   onChange={(e) => setSearch(e.target.value)}
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
                             className="grow"
                             aria-label="Search blogs"
                         />
@@ -32,7 +34,6 @@ export default function Layout({
                     <ModeToggle />
                     <CreateBlog />
                 </div>
-
                 {children}
             </main>
         </SidebarProvider>

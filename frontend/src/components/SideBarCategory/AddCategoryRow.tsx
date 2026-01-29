@@ -1,4 +1,3 @@
-// SideBarCategory/AddCategoryRow.tsx
 import { useState } from "react";
 import {
     SidebarMenuSubItem,
@@ -19,9 +18,9 @@ export const AddCategoryRow = ({ onAdd, isLoading }: Props) => {
     if (!open) {
         return (
             <SidebarMenuSubItem>
-                <SidebarMenuSubButton onClick={() => setOpen(true)} className="cursor-pointer">
+                <SidebarMenuSubButton onClick={() => setOpen(true)} className="cursor-pointer border-2 justify-center border-input">
                     <Plus className="cursor-pointer" />
-                    <span>Add Category</span>
+                    <span>New Category</span>
                 </SidebarMenuSubButton>
             </SidebarMenuSubItem>
         );

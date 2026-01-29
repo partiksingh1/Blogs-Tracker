@@ -8,10 +8,10 @@ import {
 import {
   Dialog,
 } from "@/components/ui/dialog";
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import { Category } from "@/types/category";
-import { useCategories } from "@/api/useCategory";
 import { useStateContext } from "@/lib/ContextProvider";
+import { useCategories } from "@/api/useQueries";
 
 interface CategorySelectProps {
   id?: string;
@@ -21,7 +21,7 @@ interface CategorySelectProps {
 
 export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
   const [selectedCategory, setSelectedCategory] = useState(value ?? "");
-  const [newCategory, setNewCategory] = useState("");
+  const [, setNewCategory] = useState("");
   const [showAddCategoryModal, setShowAddCategoryModal] = useState(false);
   const { user } = useStateContext();
   const userId = user?.id;
@@ -43,7 +43,7 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
         }}
         value={selectedCategory}
       >
-        <SelectTrigger className="w-[180px]">
+        <SelectTrigger className="w-45">
           <SelectValue placeholder="Choose Category" />
         </SelectTrigger>
         <SelectContent>
@@ -64,18 +64,6 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
               No categories available
             </SelectItem>
           )}
-          {/* 
-          Add Category Button
-          <div className="px-4 py-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowAddCategoryModal(true)}
-              className="w-full"
-            >
-              + Add Category
-            </Button>
-          </div> */}
         </SelectContent>
       </Select>
 
@@ -87,27 +75,6 @@ export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
           if (!open) setNewCategory(""); // Clear input when modal is closed
         }}
       >
-        {/* <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add a new Category</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
-            <Input
-              placeholder="Category name"
-              value={newCategory}
-              onChange={(e) => setNewCategory(e.target.value)}
-              disabled={isCategoryLoading}
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              // onClick={handleCreateCategory}
-              disabled={isCategoryLoading || !newCategory.trim()}
-            >
-              {isCategoryLoading ? "Creating..." : "Create"}
-            </Button>
-          </DialogFooter>
-        </DialogContent> */}
       </Dialog>
     </div>
   );
