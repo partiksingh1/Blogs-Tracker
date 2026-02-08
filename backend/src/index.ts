@@ -4,7 +4,7 @@ import dotenv from 'dotenv'
 import cors from 'cors';
 import { aiRouter } from "./routes/aiRoute.js";
 import router from "./routes/blogRoute.js";
-const port = 3000;
+const port = 8000;
 const app = express();
 dotenv.config()
 const corsOptions = {
@@ -21,6 +21,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/v1", userRouter)
 app.use("/api/v1", router)
 app.use("/api/v1", aiRouter)
+app.get('/health', (_, res) => {
+    res.status(200).send('OK');
+});
+
 app.listen(port, () => {
     console.log(`listining on port ${port}`);
 })
