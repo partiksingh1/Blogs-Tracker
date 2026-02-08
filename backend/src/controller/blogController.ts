@@ -143,7 +143,7 @@ export const UpdateBlogStatus = async (req: Request, res: Response): Promise<any
 };
 
 export const GetAllBlogs = async (req: Request, res: Response): Promise<any> => {
-    const authorId = req.params.id;
+    const authorId = req.params.userId;
     try {
         const blogs = await prisma.blog.findMany({
             where: {
@@ -305,11 +305,11 @@ export const RemoveTagFromBlog = async (req: Request, res: Response): Promise<an
 };
 
 export const GetAllTags = async (req: Request, res: Response): Promise<any> => {
-    const userId = req.params.id;
+    const userId = req.params.userId;
     try {
         const tags = await prisma.tag.findMany({
             where: {
-                userId: userId
+                userId
             }
         })
         if (!tags) {
