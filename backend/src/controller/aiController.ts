@@ -102,6 +102,9 @@ function extractMainContent($: cheerio.CheerioAPI): string {
 
 function cleanText(text: string): string {
     return text
+        // Remove common non-content patterns
+        .replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, "")
+        .replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, "")
         .replace(/\s+/g, " ")
         .replace(/(cookie|privacy|subscribe)/gi, "")
         .trim()

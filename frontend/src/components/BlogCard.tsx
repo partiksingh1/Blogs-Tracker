@@ -72,7 +72,8 @@ export const BlogCard = ({ blog }: BlogProps) => {
             </CardHeader>
 
             <CardContent>
-                <div className="flex justify-between">
+                {/* Stop propagation to prevent opening the Sheet when clicking controls */}
+                <div className="flex justify-between" onClick={(e) => e.stopPropagation()}>
                     <Button
                         onClick={() => window.open(blog.url, "_blank")}
                         className="w-1/6 underline text-xs"

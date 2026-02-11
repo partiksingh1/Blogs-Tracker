@@ -45,7 +45,7 @@ export const useCategoryMutations = (userId?: string) => {
         }
     })
 
-    const deleteMutation = useMutation({
+    const deleteCategoryMutation = useMutation({
         mutationFn: (categoryId: string) => DeleteCategories(categoryId as string, token as string),
         onSuccess: () => {
             toast.success("Category Deleted successsfully")
@@ -86,7 +86,7 @@ export const useCategoryMutations = (userId?: string) => {
         }
     })
 
-    const sumamryMutation = useMutation({
+    const summaryMutation = useMutation({
         mutationFn: (url: string) => Summarize(url, token as string),
         onSuccess: () => {
             toast.success("Here is the summary!")
@@ -136,5 +136,5 @@ export const useCategoryMutations = (userId?: string) => {
 
 
 
-    return { addCategory, deleteCategory: deleteMutation.mutate, updateMutation, addTagMutation, deleteTagMutation, addBlogMutation, deleteBlogMutation, updateBlogMutation, sumamryMutation, addCategoryToBlogMutation, deleteTagGlobalMutation }
+    return { addCategory, deleteCategoryMutation, updateMutation, addTagMutation, deleteTagMutation, addBlogMutation, deleteBlogMutation, updateBlogMutation, summaryMutation, addCategoryToBlogMutation, deleteTagGlobalMutation }
 }

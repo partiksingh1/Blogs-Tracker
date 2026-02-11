@@ -14,16 +14,11 @@ export const BlogList = () => {
   const { user, loading, token } = useStateContext(); // Destructure `loading` and `user`
   const { search, selectedCategory } = useSearchContext();
   const blogQuery = useBlogs(user?.id, token as string)
-  console.log("blogQuery are ", blogQuery.data);
   const blogs: Blog[] = blogQuery?.data?.blogs || []; // Ensure you're accessing the correct property
-  console.log("blogs are ", blogs);
 
   const filteredBlogs = useMemo(() => {
-    console.log("blogs are ", blogs);
     let result: Blog[] = blogs;
     if (selectedCategory) {
-      console.log("selectedCategory is ", selectedCategory);
-      console.log("selectedCategory is ", selectedCategory);
       result = result.filter((blog) => blog?.categoryId === selectedCategory);
     }
     if (!search) return result;
@@ -78,10 +73,9 @@ export const BlogList = () => {
           <Sheet key={blog.id}>
             <SheetTrigger asChild>
               {/* Ensure BlogCard handles the trigger */}
-              <div onClick={() => console.log("BlogCard clicked")}>
-                <BlogCard
-                  blog={blog}
-                />
+              {/* We use a div wrapper because BlogCard is a custom component and Trigger needs a DOM element ref */}
+              <div className="cursor-pointer">
+                <BlogCard blog={blog} />
               </div>
             </SheetTrigger>
             <SheetBar blog={blog} />

@@ -130,7 +130,7 @@ export const UpdateBlogStatus = async (req: Request, res: Response): Promise<any
             data: { isRead: status },
         });
         if (blog) {
-            res.status(200).json({
+            return res.status(200).json({
                 message: "Blog status updated successfully",
             });
         }

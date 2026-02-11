@@ -42,10 +42,11 @@ export function SheetBar({ blog }: SheetBarProps) {
     const [showSummaryModal, setShowSummaryModal] = useState(false);
     const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
     const [newCategory, setNewCategory] = useState("");
+    const [tagToDelete, setTagToDelete] = useState<string | null>(null);
 
     const { user } = useStateContext();
     const userId = user?.id;
-    const { addTagMutation, deleteTagMutation, deleteBlogMutation, sumamryMutation, addCategoryToBlogMutation } = useCategoryMutations(userId);
+    const { addTagMutation, deleteTagMutation, deleteBlogMutation, summaryMutation, addCategoryToBlogMutation } = useCategoryMutations(userId);
     const handleTagSubmit = (blogId: string) => {
         if (!newTag.trim()) return;
         addTagMutation.mutate({ newTag, blogId }, {
@@ -53,15 +54,15 @@ export function SheetBar({ blog }: SheetBarProps) {
                 setNewTag("");
                 setIsAddTagOpen(false);
                 queryClient.invalidateQueries({
-                    queryKey: ["getBlogs", blogId]
+                    // Invalidate the list so the new tag shows up in the dashboard immediately
+                    queryKey: ["blogs"]
                 })
             }
         });
     }
     const handleSummary = async (url: string) => {
-        sumamryMutation.mutate(url, {
+        summaryMutation.mutate(url, {
             onSuccess: (data) => {
-                console.log("sum data is ", data)
                 setSummary(data.summary)
                 setShowSummaryModal(true);
             }
@@ -86,59 +87,71 @@ export function SheetBar({ blog }: SheetBarProps) {
     };
 
     const handleTagDelete = async (tagId: string, blogId: string) => {
-        deleteTagMutation.mutate({ tagId, blogId });
+        setTagToDelete(tagId);
+        deleteTagMutation.mutate({ tagId, blogId }, {
+            onSettled: () => setTagToDelete(null)
+        });
     }
     const handleBlogDelete = async (blogId: string) => {
         deleteBlogMutation.mutate(blogId)
     }
     return (
         <>
-            <SheetContent className="flex flex-col h-full overflow-y-auto">
-                <SheetHeader className="space-y-2">
-                    <SheetTitle className="text-lg md:text-xl break-words">
+            <SheetContent className="flex flex-col h-full w-full sm:max-w-md p-0">
+                <SheetHeader className="p-6 border-b">
+                    <SheetTitle className="text-lg md:text-xl break-words leading-tight">
                         {blog.title}
                     </SheetTitle>
-                    <SheetDescription className="break-all text-sm text-muted-foreground">
+                    <SheetDescription className="break-all text-sm text-muted-foreground line-clamp-2">
                         {blog.url}
                     </SheetDescription>
                 </SheetHeader>
 
-                <div className="flex flex-col gap-6 px-2 md:px-4 py-4 flex-1">
+                <div className="flex-1 overflow-y-auto p-6 space-y-8">
 
-                    {/* Visit */}
-                    <Button
-                        className="w-full"
-                        onClick={() => window.open(blog.url, "_blank")}
-                    >
-                        Visit Link
-                    </Button>
+                    {/* Actions Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => window.open(blog.url, "_blank")}
+                        >
+                            Visit Link
+                        </Button>
 
-                    {/* Summarize */}
-                    <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button className="w-full bg-blue-600">
-                                Summarize
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="max-w-sm">
-                            <AlertDialogHeader>
-                                <AlertDialogDescription>
-                                    Are you sure you want to summarize this blog using AI?
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                                <AlertDialogCancel className="w-full sm:w-auto">
-                                    Cancel
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                    onClick={() => handleSummary(blog.url)}
-                                    className="w-full sm:w-auto"
-                                >
-                                    Sure
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                        {/* Summarize */}
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                    Summarize
+                                </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-sm">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>Generate Summary</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to summarize this blog using AI? This might take a few seconds.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                    <AlertDialogCancel className="w-full sm:w-auto">
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={(e) => {
+                                            e.preventDefault(); // Prevent closing immediately
+                                            handleSummary(blog.url);
+                                        }}
+                                        disabled={summaryMutation.isPending}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        {summaryMutation.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                                        Sure
+                                    </AlertDialogAction>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
+                    </div>
 
                     {/* Category */}
                     <div className="space-y-2">
@@ -224,12 +237,13 @@ export function SheetBar({ blog }: SheetBarProps) {
                                                 Cancel
                                             </AlertDialogCancel>
                                             <AlertDialogAction
+                                                disabled={tagToDelete === tag.id}
                                                 onClick={() =>
                                                     handleTagDelete(tag.id, blog.id)
                                                 }
-                                                className="w-full sm:w-auto"
+                                                className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
                                             >
-                                                Remove
+                                                {tagToDelete === tag.id ? <Loader2 className="animate-spin mr-2" size={16} /> : "Remove"}
                                             </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
@@ -280,7 +294,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                 </div>
 
                 {/* Footer */}
-                <SheetFooter className="mt-auto flex-col sm:flex-row gap-2">
+                <SheetFooter className="p-6 border-t mt-auto flex-col sm:flex-row gap-2 sm:justify-between">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button className="w-full sm:w-auto bg-red-500">
@@ -299,9 +313,11 @@ export function SheetBar({ blog }: SheetBarProps) {
                                     Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
+                                    disabled={deleteBlogMutation.isPending}
                                     onClick={() => handleBlogDelete(blog.id)}
-                                    className="w-full sm:w-auto"
+                                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
                                 >
+                                    {deleteBlogMutation.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
                                     Delete
                                 </AlertDialogAction>
                             </AlertDialogFooter>

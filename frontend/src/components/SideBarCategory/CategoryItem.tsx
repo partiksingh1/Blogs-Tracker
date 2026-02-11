@@ -4,7 +4,7 @@ import {
     SidebarMenuSubButton,
     SidebarInput,
 } from "@/components/ui/sidebar";
-import { MoreHorizontalIcon, Edit, X, Trash2, Check } from "lucide-react";
+import { MoreHorizontalIcon, Edit, X, Trash2, Check, Loader2 } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuTrigger,
@@ -22,18 +22,33 @@ interface Props {
     isEditing: Boolean;
     onStartEdit: () => void
     onCancelEdit: () => void
-    onDelete: () => void
 }
 
-export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit, onDelete }: Props) => {
+export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }: Props) => {
     const [value, setValue] = useState(category.name);
     const { user } = useStateContext();
     const { selectedCategory, setSelectedCategory } = useSearchContext();
     const userId = user?.id;
-    const { updateMutation } = useCategoryMutations(userId);
+    const { updateMutation, deleteCategoryMutation } = useCategoryMutations(userId);
+
     const handleUpdate = () => {
-        updateMutation.mutate({ categoryId: category.id, categoryName: value });
+        if (value === category.name) {
+            onCancelEdit();
+            return;
+        }
+        updateMutation.mutate({ categoryId: category.id, categoryName: value }, {
+            onSuccess: () => {
+                onCancelEdit();
+            }
+        });
     }
+
+    const handleDelete = () => {
+        if (confirm("Are you sure you want to delete this category?")) {
+            deleteCategoryMutation.mutate(category.id)
+        }
+    }
+
     return (
         <SidebarMenuSubItem>
             <SidebarMenuSubButton
@@ -63,10 +78,12 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit, o
                         <span className="truncate">{category.name}</span>
                     )}
 
-                    {!isEditing && (
+                    {!isEditing && deleteCategoryMutation.isPending ? (
+                        <Loader2 className="animate-spin text-muted-foreground" size={16} />
+                    ) : !isEditing && (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <button className="p-1 rounded hover:bg-muted cursor-pointer">
+                                <button className="p-1 rounded hover:bg-muted cursor-pointer" onClick={(e) => e.stopPropagation()}>
                                     <MoreHorizontalIcon size={16} />
                                 </button>
                             </DropdownMenuTrigger>
@@ -76,7 +93,10 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit, o
                                     <Edit /> Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem className="bg-red-50 cursor-pointer" onClick={onDelete}>
+                                <DropdownMenuItem className="bg-red-50 cursor-pointer" onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDelete();
+                                }}>
                                     <Trash2 color="red" />
                                     <span className="text-red-600">Delete</span>
                                 </DropdownMenuItem>
@@ -85,9 +105,19 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit, o
                     )}
 
                     {isEditing && (
-                        <button className="flex justify-center items-center gap-2" onClick={onCancelEdit}>
+                        <button className="flex justify-center items-center gap-2" onClick={(e) => {
+                            e.stopPropagation();
+                            onCancelEdit();
+                        }}>
                             <X className="cursor-pointer" size={16} />
-                            <Check onClick={handleUpdate} className="cursor-pointer" size={16} />
+                            {updateMutation.isPending ? (
+                                <Loader2 className="animate-spin" size={16} />
+                            ) : (
+                                <Check onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleUpdate();
+                                }} className="cursor-pointer" size={16} />
+                            )}
                         </button>
 
                     )}
