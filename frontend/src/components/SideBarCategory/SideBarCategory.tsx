@@ -9,11 +9,12 @@ import { useStateContext } from "@/lib/ContextProvider";
 import { useCategoryMutations } from "../../api/useMutation";
 import { CategoryList } from "./CategoryList";
 import { useCategories } from "@/api/useQueries";
+import { useSearchContext } from "@/lib/SearchProvider";
 
 export const SideBarCategory = () => {
     const { user, token } = useStateContext();
     const userId = user?.id;
-
+    const { setSelectedCategory } = useSearchContext();
     const categoriesQuery = useCategories(userId, token as string);
     const { addCategory } = useCategoryMutations(userId);
 
@@ -24,7 +25,7 @@ export const SideBarCategory = () => {
             <CollapsibleTrigger asChild>
                 <SidebarMenuButton className="cursor-pointer">
                     <Folder />
-                    <span>Categories</span>
+                    <span onClick={() => { setSelectedCategory("") }} >Categories</span>
                     <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
             </CollapsibleTrigger>

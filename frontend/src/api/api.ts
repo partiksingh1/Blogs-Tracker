@@ -164,3 +164,47 @@ export const Summarize = async (url: string, token: string) => {
     }
     throw new Error("Failed to summarize this url")
 }
+
+export const AddCategoryToBlog = async (
+    blogId: string,
+    userId: string,
+    categoryName: string,
+    token: string
+) => {
+    const res = await axios.put(
+        `${API_URL}/categories/${blogId}/${userId}`,
+        {
+            name: categoryName
+        },
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
+
+    if (res.status === 200) {
+        return res.data;
+    }
+
+    throw new Error("Failed to add category to blog");
+};
+export const DeleteTagGlobal = async (
+    tagId: string,
+    token: string
+) => {
+    const res = await axios.delete(
+        `${API_URL}/tags/${tagId}`,
+        {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }
+    );
+
+    if (res.status === 200) {
+        return res.data;
+    }
+
+    throw new Error("Failed to delete tag");
+};

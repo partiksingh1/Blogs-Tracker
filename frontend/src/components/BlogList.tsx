@@ -12,18 +12,25 @@ import { useMemo } from "react";
 import { useBlogs } from "@/api/useQueries";
 export const BlogList = () => {
   const { user, loading, token } = useStateContext(); // Destructure `loading` and `user`
-  const { search } = useSearchContext();
+  const { search, selectedCategory } = useSearchContext();
   const blogQuery = useBlogs(user?.id, token as string)
   console.log("blogQuery are ", blogQuery.data);
   const blogs: Blog[] = blogQuery?.data?.blogs || []; // Ensure you're accessing the correct property
   console.log("blogs are ", blogs);
 
   const filteredBlogs = useMemo(() => {
-    if (!search) return blogs;
-    return blogs.filter((blog) =>
+    console.log("blogs are ", blogs);
+    let result: Blog[] = blogs;
+    if (selectedCategory) {
+      console.log("selectedCategory is ", selectedCategory);
+      console.log("selectedCategory is ", selectedCategory);
+      result = result.filter((blog) => blog?.categoryId === selectedCategory);
+    }
+    if (!search) return result;
+    return result.filter((blog) =>
       blog.title?.toLowerCase().includes(search.toLowerCase())
     );
-  }, [blogs, search]);
+  }, [blogs, search, selectedCategory]);
 
   if (loading || blogQuery.isLoading) {
     return (

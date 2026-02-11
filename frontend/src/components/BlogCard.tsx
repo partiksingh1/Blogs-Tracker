@@ -96,7 +96,7 @@ export const BlogCard = ({ blog }: BlogProps) => {
                 <div className="flex flex-wrap overflow-hidden">
                     <div className="flex flex-row flex-wrap">
                         {(blog.tags ?? []).map((tag) => (
-                            <Badge className={`m-1 ${getTagColor(tag.name)}`}>{tag.name}</Badge>
+                            <Badge key={tag.id} className={`m-1 ${getTagColor(tag.name)}`}>{tag.name}</Badge>
 
                         ))}
                     </div>

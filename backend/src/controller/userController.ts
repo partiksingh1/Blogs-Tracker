@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer"
 const prisma = new PrismaClient();
 import dotenv from "dotenv";
 import { OAuth2Client } from "google-auth-library";

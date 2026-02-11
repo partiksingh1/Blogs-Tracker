@@ -15,6 +15,7 @@ import { Category } from "@/types/category";
 import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 import { useStateContext } from "@/lib/ContextProvider";
 import { useCategoryMutations } from "../../api/useMutation";
+import { useSearchContext } from "@/lib/SearchProvider";
 
 interface Props {
     category: Category;
@@ -27,6 +28,7 @@ interface Props {
 export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit, onDelete }: Props) => {
     const [value, setValue] = useState(category.name);
     const { user } = useStateContext();
+    const { selectedCategory, setSelectedCategory } = useSearchContext();
     const userId = user?.id;
     const { updateMutation } = useCategoryMutations(userId);
     const handleUpdate = () => {
@@ -34,8 +36,20 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit, o
     }
     return (
         <SidebarMenuSubItem>
-            <SidebarMenuSubButton>
-                <div className="flex w-full items-center justify-between gap-2">
+            <SidebarMenuSubButton
+                onClick={() => {
+                    if (selectedCategory === category.id) {
+                        setSelectedCategory(""); // deselect if clicked again
+                    } else {
+                        setSelectedCategory(category.id); // select if not already
+                    }
+                }}
+                className={`cursor-pointer ${selectedCategory === category.id
+                    ? "bg-gray-400"      // selected
+                    : "" // not selected
+                    }`}
+
+            >                <div className="flex w-full items-center justify-between gap-2">
                     {isEditing ? (
                         <SidebarInput
                             className="shadow-amber-400"
