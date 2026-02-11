@@ -44,7 +44,7 @@ export const AddCategoryRow = ({ onAdd, isLoading }: Props) => {
                 />
                 {
                     isLoading ? (
-                        <LoaderCircle />
+                        <LoaderCircle className="animate-spin" size={18} />
                     ) : (
                         <button
                             disabled={!value || isLoading}

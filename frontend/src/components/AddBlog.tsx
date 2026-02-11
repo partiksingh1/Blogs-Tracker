@@ -9,13 +9,13 @@ import {
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { ChangeEvent, useState } from "react"
-import toast from "react-hot-toast";;
+import toast from "react-hot-toast";
 import { CategorySelect } from "./CategorySelection";
 import { Button } from "@/components/ui/button";
 import { useCategoryMutations } from "@/api/useMutation";
 import { useStateContext } from "@/lib/ContextProvider";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
-import { SelectGroup, SelectValue } from "@radix-ui/react-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup } from "./ui/select";
+import { Loader2 } from "lucide-react";
 
 export const CreateBlog = () => {
     const { user } = useStateContext();
@@ -62,12 +62,13 @@ export const CreateBlog = () => {
         e.preventDefault();
         if (!validateForm()) return;
         try {
-            addBlogMutation.mutateAsync({ url, title, isRead, categoryName: category }).then(() => {
-                resetForm()
-                setDialogOpen(false);
-            })
+            await addBlogMutation.mutateAsync({ url, title, isRead, categoryName: category });
+            toast.success("Blog added successfully");
+            resetForm();
+            setDialogOpen(false);
         } catch (error) {
-
+            console.error("Failed to add blog:", error);
+            toast.error("Failed to add blog. Please try again.");
         }
     };
 
@@ -79,7 +80,7 @@ export const CreateBlog = () => {
                 </Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-106.25">
+            <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Add a new blog</DialogTitle>
                 </DialogHeader>
@@ -151,8 +152,8 @@ export const CreateBlog = () => {
                     <DialogFooter>
                         <Button type="submit" disabled={addBlogMutation.isPending} aria-busy={addBlogMutation.isPending}>
                             {addBlogMutation.isPending ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                                <div className="flex items-center">
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Submitting...
                                 </div>
                             ) : (

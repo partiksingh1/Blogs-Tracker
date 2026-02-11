@@ -4,12 +4,13 @@ export interface Blog {
     url: string,
     isRead: boolean,
     createdAt: string
-    categories: {
+    category: {
         id: string,
         name: string
     }
     tags: {
         id: string
         name: string
-    }[]
+    }[],
+    categoryId?: string
 }

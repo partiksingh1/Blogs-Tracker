@@ -27,7 +27,7 @@ import { Blog } from "@/types/blog"
 import { CheckIcon, X } from "lucide-react"
 import { useState } from "react"
 import { useCategoryMutations } from "../api/useMutation"
-import { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "./ui/badge";
 import { Card, CardAction, CardDescription, CardHeader } from "./ui/card";
 import ReactMarkdown from "react-markdown";
@@ -35,14 +35,18 @@ interface SheetBarProps {
     blog: Blog
 }
 export function SheetBar({ blog }: SheetBarProps) {
-    const queryClient = new QueryClient();
+    const queryClient = useQueryClient();
     const [isAddTagOpen, setIsAddTagOpen] = useState(false)
     const [newTag, setNewTag] = useState("")
     const [summary, setSummary] = useState("")
     const [showSummaryModal, setShowSummaryModal] = useState(false);
+    const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
+    const [newCategory, setNewCategory] = useState("");
+    const [tagToDelete, setTagToDelete] = useState<string | null>(null);
+
     const { user } = useStateContext();
     const userId = user?.id;
-    const { addTagMutation, deleteTagMutation, deleteBlogMutation, sumamryMutation } = useCategoryMutations(userId);
+    const { addTagMutation, deleteTagMutation, deleteBlogMutation, summaryMutation, addCategoryToBlogMutation } = useCategoryMutations(userId);
     const handleTagSubmit = (blogId: string) => {
         if (!newTag.trim()) return;
         addTagMutation.mutate({ newTag, blogId }, {
@@ -50,163 +54,307 @@ export function SheetBar({ blog }: SheetBarProps) {
                 setNewTag("");
                 setIsAddTagOpen(false);
                 queryClient.invalidateQueries({
-                    queryKey: ["getBlogs", blogId]
+                    // Invalidate the list so the new tag shows up in the dashboard immediately
+                    queryKey: ["blogs"]
                 })
             }
         });
     }
     const handleSummary = async (url: string) => {
-        sumamryMutation.mutate(url, {
+        summaryMutation.mutate(url, {
             onSuccess: (data) => {
-                console.log("sum data is ", data)
                 setSummary(data.summary)
                 setShowSummaryModal(true);
             }
         })
 
     }
+    const handleCategorySubmit = () => {
+        if (!newCategory.trim()) return;
+
+        addCategoryToBlogMutation.mutate(
+            {
+                blogId: blog.id,
+                categoryName: newCategory
+            },
+            {
+                onSuccess: () => {
+                    setNewCategory("");
+                    setIsAddCategoryOpen(false);
+                }
+            }
+        );
+    };
+
     const handleTagDelete = async (tagId: string, blogId: string) => {
-        deleteTagMutation.mutate({ tagId, blogId });
+        setTagToDelete(tagId);
+        deleteTagMutation.mutate({ tagId, blogId }, {
+            onSettled: () => setTagToDelete(null)
+        });
     }
     const handleBlogDelete = async (blogId: string) => {
         deleteBlogMutation.mutate(blogId)
     }
     return (
         <>
-            <SheetContent>
-                <SheetHeader>
-                    <SheetTitle>{blog.title}</SheetTitle>
-                    <SheetDescription>
+            <SheetContent className="flex flex-col h-full w-full sm:max-w-md p-0">
+                <SheetHeader className="p-6 border-b">
+                    <SheetTitle className="text-lg md:text-xl break-words leading-tight">
+                        {blog.title}
+                    </SheetTitle>
+                    <SheetDescription className="break-all text-sm text-muted-foreground line-clamp-2">
                         {blog.url}
                     </SheetDescription>
                 </SheetHeader>
-                <div className="grid flex-1 auto-rows-min gap-6 px-4">
-                    <div className="grid gap-3">
-                        <Button className="cursor-pointer" onClick={() => {
-                            window.open(blog.url, "_blank")
-                        }}>Visit Link</Button>
-                    </div>
-                    <div className="grid gap-3">
+
+                <div className="flex-1 overflow-y-auto p-6 space-y-8">
+
+                    {/* Actions Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                        <Button
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => window.open(blog.url, "_blank")}
+                        >
+                            Visit Link
+                        </Button>
+
+                        {/* Summarize */}
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button className="bg-blue-600 cursor-pointer">Summarize</Button>
+                                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                    Summarize
+                                </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent size="sm">
+                            <AlertDialogContent className="max-w-sm">
                                 <AlertDialogHeader>
+                                    <AlertDialogTitle>Generate Summary</AlertDialogTitle>
                                     <AlertDialogDescription>
-                                        Are you sure you want summarize this blog using AI?
+                                        Are you sure you want to summarize this blog using AI? This might take a few seconds.
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                    <AlertDialogCancel className="cursor-pointer" size="sm" variant="outline">Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => handleSummary(blog.url)} type="submit" className="cursor-pointer" size="sm">Sure</AlertDialogAction>
+                                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                    <AlertDialogCancel className="w-full sm:w-auto">
+                                        Cancel
+                                    </AlertDialogCancel>
+                                    <AlertDialogAction
+                                        onClick={(e) => {
+                                            e.preventDefault(); // Prevent closing immediately
+                                            handleSummary(blog.url);
+                                        }}
+                                        disabled={summaryMutation.isPending}
+                                        className="w-full sm:w-auto"
+                                    >
+                                        {summaryMutation.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                                        Sure
+                                    </AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
                     </div>
-                    <div className="grid gap-3">
-                        <Label htmlFor="sheet-demo-username">Category :
-                            <p className="bg-black text-white p-2 rounded-md">sdffs</p>
-                        </Label>
-                        <Label>Added on :
-                            <p className="p-1 rounded-md">{blog.createdAt.substring(0, 10)}</p>
-                        </Label>
-                        <Label className="mt-2">Tags:</Label>
+
+                    {/* Category */}
+                    <div className="space-y-2">
+                        <Label>Category</Label>
+
+                        <div className="flex flex-wrap items-center gap-2">
+                            {blog?.category?.name && !isAddCategoryOpen && (
+                                <Badge className="px-3 py-1">
+                                    {blog.category.name}
+                                </Badge>
+                            )}
+
+                            {isAddCategoryOpen ? (
+                                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                                    <Input
+                                        value={newCategory}
+                                        onChange={(e) => setNewCategory(e.target.value)}
+                                        placeholder="Enter category"
+                                        disabled={addCategoryToBlogMutation.isPending}
+                                        className="flex-1"
+                                    />
+
+                                    <div className="flex gap-2">
+                                        {addCategoryToBlogMutation.isPending ? (
+                                            <Loader2 className="animate-spin" size={20} />
+                                        ) : (
+                                            <CheckIcon
+                                                className="cursor-pointer"
+                                                size={20}
+                                                onClick={handleCategorySubmit}
+                                            />
+                                        )}
+                                        <X
+                                            className="cursor-pointer"
+                                            size={20}
+                                            onClick={() => setIsAddCategoryOpen(false)}
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={() => setIsAddCategoryOpen(true)}
+                                >
+                                    {blog?.category ? "Change" : "Add"} Category
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Date */}
+                    <div className="space-y-1">
+                        <Label>Added on</Label>
+                        <p className="text-sm text-muted-foreground">
+                            {blog.createdAt.substring(0, 10)}
+                        </p>
+                    </div>
+
+                    {/* Tags */}
+                    <div className="space-y-3">
+                        <Label>Tags</Label>
 
                         <div className="flex flex-wrap gap-2">
-                            {blog.tags?.map((tag, index) => (
-                                <AlertDialog>
+                            {blog.tags?.map((tag) => (
+                                <AlertDialog key={tag.id}>
                                     <AlertDialogTrigger asChild>
-                                        {/* <Button variant="destructive">Delete Chat</Button> */}
-                                        <Badge className="cursor-pointer hover:bg-white hover:text-black hover:border-2 hover:border-black">{tag.name}</Badge>
+                                        <Badge className="cursor-pointer hover:scale-105 transition">
+                                            {tag.name}
+                                        </Badge>
                                     </AlertDialogTrigger>
-                                    <AlertDialogContent size="sm">
+                                    <AlertDialogContent className="max-w-sm">
                                         <AlertDialogHeader>
-                                            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-                                                <Trash2Icon />
-                                            </AlertDialogMedia>
-                                            <AlertDialogTitle>Delete {tag.name}?</AlertDialogTitle>
+                                            <AlertDialogTitle>
+                                                Remove {tag.name}?
+                                            </AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                Are you sure you want to delete the tag with name - {tag.name}
+                                                Are you sure you want to remove this tag?
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel className="cursor-pointer" size="sm" variant="outline">Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => { handleTagDelete }} className="cursor-pointer" size="sm" variant="destructive">Delete</AlertDialogAction>
+                                        <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                            <AlertDialogCancel className="w-full sm:w-auto">
+                                                Cancel
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                                disabled={tagToDelete === tag.id}
+                                                onClick={() =>
+                                                    handleTagDelete(tag.id, blog.id)
+                                                }
+                                                className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
+                                            >
+                                                {tagToDelete === tag.id ? <Loader2 className="animate-spin mr-2" size={16} /> : "Remove"}
+                                            </AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>
                             ))}
-                            <div>
-                                {
-                                    isAddTagOpen ? (
-                                        <div className="flex justify-center items-center gap-2">
-                                            <Input className="p-4" value={newTag} onChange={(e) => setNewTag(e.target.value)} placeholder="Write a Tag here" disabled={addTagMutation.isPending} />
-                                            {addTagMutation.isPending ? (
-                                                <Loader2 className="animate-spin" size={30} />
-                                            ) : (
-                                                <CheckIcon
-                                                    className="cursor-pointer"
-                                                    size={30}
-                                                    onClick={() => handleTagSubmit(blog.id)}
-                                                />
-                                            )}
-
-                                            <X className="cursor-pointer" size={"30"} onClick={() => setIsAddTagOpen(false)} />
-                                        </div>
-
-                                    ) : (
-                                        <Button variant="secondary" size="default" className="cursor-pointer bg-white text-black border-dotted border-2" onClick={() => setIsAddTagOpen(true)}>Add Tag</Button>
-                                    )
-                                }
-                            </div>
                         </div>
+
+                        {/* Add Tag */}
+                        {isAddTagOpen ? (
+                            <div className="flex flex-col sm:flex-row gap-2 w-full">
+                                <Input
+                                    value={newTag}
+                                    onChange={(e) => setNewTag(e.target.value)}
+                                    placeholder="Write a tag"
+                                    disabled={addTagMutation.isPending}
+                                    className="flex-1"
+                                />
+
+                                <div className="flex gap-2">
+                                    {addTagMutation.isPending ? (
+                                        <Loader2 className="animate-spin" size={20} />
+                                    ) : (
+                                        <CheckIcon
+                                            className="cursor-pointer"
+                                            size={20}
+                                            onClick={() =>
+                                                handleTagSubmit(blog.id)
+                                            }
+                                        />
+                                    )}
+                                    <X
+                                        className="cursor-pointer"
+                                        size={20}
+                                        onClick={() => setIsAddTagOpen(false)}
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                className="border-dashed w-fit"
+                                onClick={() => setIsAddTagOpen(true)}
+                            >
+                                Add Tag
+                            </Button>
+                        )}
                     </div>
                 </div>
-                <SheetFooter className="">
+
+                {/* Footer */}
+                <SheetFooter className="p-6 border-t mt-auto flex-col sm:flex-row gap-2 sm:justify-between">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            {/* <Button variant="destructive">Delete Chat</Button> */}
-                            <Button className="bg-red-500 cursor-pointer">Delete</Button>
+                            <Button className="w-full sm:w-auto bg-red-500">
+                                Delete
+                            </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent size="sm">
+                        <AlertDialogContent className="max-w-sm">
                             <AlertDialogHeader>
-                                <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-                                    <Trash2Icon />
-                                </AlertDialogMedia>
-                                <AlertDialogTitle>Delete?</AlertDialogTitle>
+                                <AlertDialogTitle>Delete blog?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Are you sure you want to delete this blog?
+                                    This action cannot be undone.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="cursor-pointer" size="sm" variant="outline">Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleBlogDelete(blog.id)} type="submit" className="cursor-pointer" size="sm" variant="destructive">Delete</AlertDialogAction>
+                            <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                                <AlertDialogCancel className="w-full sm:w-auto">
+                                    Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                    disabled={deleteBlogMutation.isPending}
+                                    onClick={() => handleBlogDelete(blog.id)}
+                                    className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
+                                >
+                                    {deleteBlogMutation.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                                    Delete
+                                </AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
+
                     <SheetClose asChild>
-                        <Button variant="outline" className="cursor-pointer">Close</Button>
+                        <Button variant="outline" className="w-full sm:w-auto">
+                            Close
+                        </Button>
                     </SheetClose>
                 </SheetFooter>
-
-
             </SheetContent>
+
             {/* Modal overlay */}
             {showSummaryModal && (
-                <div className="fixed inset-0 flex items-center justify-center">
-                    <Card className="flex mx-auto w-1/2 h-fit">
-                        <CardAction className="flex w-full justify-end cursor-pointer" onClick={() => { setShowSummaryModal(false); setSummary(""); }}>
-                            <X className="mr-8 bg-gray-300 rounded-4xl p-1" />
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto relative">
+                        <CardAction
+                            className="absolute top-4 right-4 cursor-pointer"
+                            onClick={() => {
+                                setShowSummaryModal(false);
+                                setSummary("");
+                            }}
+                        >
+                            <X />
                         </CardAction>
+
                         <CardHeader>
-                            <CardDescription className="">
+                            <CardDescription className="prose prose-sm md:prose-base max-w-none">
                                 <ReactMarkdown>{summary}</ReactMarkdown>
                             </CardDescription>
                         </CardHeader>
                     </Card>
                 </div>
             )}
+
         </>
     )
 }

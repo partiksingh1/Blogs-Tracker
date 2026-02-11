@@ -9,22 +9,24 @@ import { useStateContext } from "@/lib/ContextProvider";
 import { useCategoryMutations } from "../../api/useMutation";
 import { CategoryList } from "./CategoryList";
 import { useCategories } from "@/api/useQueries";
+import { useSearchContext } from "@/lib/SearchProvider";
 
 export const SideBarCategory = () => {
     const { user, token } = useStateContext();
     const userId = user?.id;
-
+    const { setSelectedCategory } = useSearchContext();
     const categoriesQuery = useCategories(userId, token as string);
     const { addCategory } = useCategoryMutations(userId);
-
-    if (categoriesQuery.isLoading) return null;
 
     return (
         <SidebarMenuItem>
             <CollapsibleTrigger asChild>
                 <SidebarMenuButton className="cursor-pointer">
                     <Folder />
-                    <span>Categories</span>
+                    <span onClick={(e) => {
+                        e.stopPropagation(); // Prevent collapsing when clicking the label
+                        setSelectedCategory("");
+                    }}>Categories</span>
                     <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
                 </SidebarMenuButton>
             </CollapsibleTrigger>
@@ -37,7 +39,7 @@ export const SideBarCategory = () => {
                 ) : (
                     <CategoryList
                         categories={categoriesQuery.data ?? []}
-                        onAdd={(name: any) => addCategory.mutate(name)}
+                        onAdd={(name: string) => addCategory.mutate(name)}
                         isAdding={addCategory.isPending}
                     />
                 )}

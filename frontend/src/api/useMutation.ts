@@ -1,4 +1,4 @@
-import { DeleteBlog, DeleteCategories, PostBlog, PostCategories, PostTag, RemoveTag, Summarize, UpdateBlog, UpdateCategory } from "@/api/api";
+import { AddCategoryToBlog, DeleteBlog, DeleteCategories, DeleteTagGlobal, PostBlog, PostCategories, PostTag, RemoveTag, Summarize, UpdateBlog, UpdateCategory } from "@/api/api";
 import { useStateContext } from "@/lib/ContextProvider";
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import toast from "react-hot-toast"
@@ -45,7 +45,7 @@ export const useCategoryMutations = (userId?: string) => {
         }
     })
 
-    const deleteMutation = useMutation({
+    const deleteCategoryMutation = useMutation({
         mutationFn: (categoryId: string) => DeleteCategories(categoryId as string, token as string),
         onSuccess: () => {
             toast.success("Category Deleted successsfully")
@@ -86,11 +86,55 @@ export const useCategoryMutations = (userId?: string) => {
         }
     })
 
-    const sumamryMutation = useMutation({
+    const summaryMutation = useMutation({
         mutationFn: (url: string) => Summarize(url, token as string),
         onSuccess: () => {
             toast.success("Here is the summary!")
         }
     })
-    return { addCategory, deleteCategory: deleteMutation.mutate, updateMutation, addTagMutation, deleteTagMutation, addBlogMutation, deleteBlogMutation, updateBlogMutation, sumamryMutation }
+    const addCategoryToBlogMutation = useMutation({
+        mutationFn: ({ blogId, categoryName }: { blogId: string; categoryName: string }) =>
+            AddCategoryToBlog(blogId, userId as string, categoryName, token as string),
+
+        onSuccess: () => {
+            toast.success("Category added to blog successfully");
+
+            queryClient.invalidateQueries({
+                queryKey: ["getBlogs", userId],
+                exact: false
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: ["getCategory", userId],
+                exact: false
+            });
+        }
+    });
+    const deleteTagGlobalMutation = useMutation({
+        mutationFn: (tagId: string) =>
+            DeleteTagGlobal(tagId, token as string),
+
+        onSuccess: () => {
+            toast.success("Tag deleted successfully");
+
+            queryClient.invalidateQueries({
+                queryKey: ["getTags", userId]
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: ["getBlogs", userId]
+            });
+        },
+
+        onError: (error: any) => {
+            toast.error(
+                error?.response?.data?.message ||
+                "Cannot delete tag while it's used by blogs"
+            );
+        }
+    });
+
+
+
+    return { addCategory, deleteCategoryMutation, updateMutation, addTagMutation, deleteTagMutation, addBlogMutation, deleteBlogMutation, updateBlogMutation, summaryMutation, addCategoryToBlogMutation, deleteTagGlobalMutation }
 }

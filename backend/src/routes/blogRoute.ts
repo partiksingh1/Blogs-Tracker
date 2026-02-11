@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { AddBlog, AddTagToBlog, DeleteBlog, GetAllBlogs, GetAllTags, GetDashboardData, RemoveTagFromBlog, UpdateBlogStatus } from "../controller/blogController.js";
 import { Auth } from "../middleware/middleware.js";
-import { CreateCategory, DeleteCategory, GetCategories, UpdateCategory } from "../controller/categoryTagController.js";
+import { AddCategoryToBlog, CreateCategory, DeleteCategory, DeleteTag, GetCategories, UpdateCategory } from "../controller/categoryTagController.js";
 
 
 const router = Router();
@@ -18,6 +18,7 @@ router.patch("/status", Auth, UpdateBlogStatus);
 
 // Delete a blog
 router.delete("/delete/:blogId", Auth, DeleteBlog);
+router.delete("/tags/:tagId", Auth, DeleteTag);
 
 // Add a tag to a blog
 
@@ -29,6 +30,7 @@ router.delete("/delete-tag", Auth, RemoveTagFromBlog);
  * CATEGORY ROUTES
  */
 router.post("/categories/:userId", Auth, CreateCategory);
+router.put("/categories/:blogId/:userId", Auth, AddCategoryToBlog);
 router.get("/categories/:userId", Auth, GetCategories);
 router.patch("/categories/:categoryId", Auth, UpdateCategory);
 router.delete("/categories/:categoryId", Auth, DeleteCategory);

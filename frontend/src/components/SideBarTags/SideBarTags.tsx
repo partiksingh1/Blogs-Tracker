@@ -1,6 +1,7 @@
 import {
     SidebarMenuButton,
     SidebarMenuItem,
+    SidebarMenuSkeleton,
 } from "@/components/ui/sidebar";
 import { CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronRight, HashIcon } from "lucide-react";
@@ -13,7 +14,6 @@ export const SideBarTags = () => {
     const userId = user?.id;
 
     const tagsQuery = useTags(userId, token as string);
-    if (tagsQuery.isLoading) return false;
 
     return (
         <SidebarMenuItem>
@@ -26,9 +26,11 @@ export const SideBarTags = () => {
             </CollapsibleTrigger>
 
             <CollapsibleContent>
-                <TagList
-                    tags={tagsQuery.data?.tags}
-                />
+                {tagsQuery.isLoading ? (
+                    <SidebarMenuSkeleton />
+                ) : (
+                    <TagList tags={tagsQuery.data?.tags ?? []} />
+                )}
             </CollapsibleContent>
         </SidebarMenuItem>
     );
