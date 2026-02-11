@@ -16,8 +16,7 @@ jobs:
   # =========================
   deploy-backend:
     runs-on: ubuntu-latest
-    if: contains(toJson(github.event.commits.*), 'backend/')
-
+    
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout repository
@@ -59,8 +58,7 @@ jobs:
   # =========================
   deploy-frontend:
     runs-on: ubuntu-latest
-    if: contains(toJson(github.event.commits.*), 'frontend/')
-
+    
     steps:
       # 1️⃣ Checkout repository
       - name: Checkout repository
