@@ -106,7 +106,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                     </div>
                     <div className="grid gap-3">
                         <Label htmlFor="sheet-demo-username">Category :
-                            <p className="bg-black text-white p-2 rounded-md">sdffs</p>
+                            <p className="bg-black text-white p-2 rounded-md">{blog?.categories?.name}</p>
                         </Label>
                         <Label>Added on :
                             <p className="p-1 rounded-md">{blog.createdAt.substring(0, 10)}</p>
@@ -114,7 +114,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                         <Label className="mt-2">Tags:</Label>
 
                         <div className="flex flex-wrap gap-2">
-                            {blog.tags?.map((tag, index) => (
+                            {blog.tags?.map((tag) => (
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         {/* <Button variant="destructive">Delete Chat</Button> */}

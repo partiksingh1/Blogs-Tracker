@@ -9,7 +9,7 @@ import toast from "react-hot-toast"
 
 export default function LandingPage() {
     const navigate = useNavigate();
-    const { user, setUser, loading } = useStateContext();
+    const { user, setUser, loading, setToken } = useStateContext();
     console.log("user is ", user);
 
 
@@ -32,11 +32,11 @@ export default function LandingPage() {
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.message);
-            toast.success(`Welcome, ${user?.username}`)
+            toast.success(`Welcome, ${data?.user?.username}`)
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
+            setToken(data.token)
             setUser(data.user);
-
             navigate("/dashboard");
         } catch (err) {
             console.error("Google login failed:", err);
@@ -214,8 +214,8 @@ export default function LandingPage() {
                             >
                                 {/* Left: Title + Description */}
                                 <div className="md:w-1/2 flex flex-col justify-center items-center text-center md:text-left">
-                                    <h2 className="text-2xl md:text-4xl font-bold mb-4 ">{feature.title}</h2>
-                                    <p className="text-base md:text-xl text-center mt-5">{feature.description}</p>
+                                    <h2 className="text-2xl md:text-4xl font-bold mb-4 text-black">{feature.title}</h2>
+                                    <p className="text-gray-700 text-base md:text-xl text-center mt-5">{feature.description}</p>
                                 </div>
 
                                 {/* Right: Image */}

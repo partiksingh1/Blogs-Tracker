@@ -44,7 +44,11 @@ export const BlogList = () => {
   }
 
   if (blogs.length === 0) {
-    return <div>No blogs found</div>;
+    return <div className="flex w-full justify-center items-center">
+      <div className="m-5 p-5 border-4 rounded-md">
+        No Blogs found :(
+      </div>
+    </div>
   }
 
   if (filteredBlogs.length === 0) {
