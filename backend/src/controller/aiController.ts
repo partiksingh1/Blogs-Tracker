@@ -1,8 +1,6 @@
 import { Request, Response } from "express"
-import { PrismaClient } from "@prisma/client"
 import * as cheerio from 'cheerio';
 import { ai } from "../utils/genAi.js";
-const prisma = new PrismaClient()
 import scrapingbee from 'scrapingbee';
 const scrapingbeeKey = process.env.SCRAPEBEE_API_KEY as string
 const client = new scrapingbee.ScrapingBeeClient(scrapingbeeKey)

@@ -1,42 +1,42 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
-import { clearAuthToken, getAuthToken } from "./auth";
+import {
+    createContext,
+    ReactNode,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from "react";
 
 type User = {
     email: string;
     username: string;
     id: string;
-    picture: string
+    picture: string;
 };
 
-interface StateContextType {
+interface AuthContextType {
     user: User | null;
     token: string | null;
-    loading: boolean; // Loading state added
-    setUser: React.Dispatch<React.SetStateAction<User | null>>;
-    setToken: React.Dispatch<React.SetStateAction<string | null>>;
+    loading: boolean;
+    login: (user: User, token: string) => void;
     logout: () => void;
 }
 
-const StateContext = createContext<StateContextType>({
+const AuthContext = createContext<AuthContextType>({
     user: null,
     token: null,
-    loading: true,  // By default, we assume loading until data is fetched
-    setUser: () => { },
-    setToken: () => { },
+    loading: true,
+    login: () => { },
     logout: () => { },
 });
 
-interface ContextProviderProps {
-    children: ReactNode;
-}
-
-export const ContextProvider: React.FC<ContextProviderProps> = ({ children }) => {
+export const ContextProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [token, setToken] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true); // Loading state
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedToken = getAuthToken(); // Replace with your actual logic to get token
+        const storedToken = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
 
         if (storedToken && storedUser) {
@@ -44,32 +44,41 @@ export const ContextProvider: React.FC<ContextProviderProps> = ({ children }) =>
             setUser(JSON.parse(storedUser));
         }
 
-        setLoading(false); // Once data is fetched, set loading to false
+        setLoading(false);
     }, []);
 
-    const logout = () => {
-        clearAuthToken();
-        setUser(null);
-        setToken(null);
+    const login = (userData: User, authToken: string) => {
+        setUser(userData);
+        setToken(authToken);
+
+        localStorage.setItem("token", authToken);
+        localStorage.setItem("user", JSON.stringify(userData));
     };
 
-    const contextValue = useMemo(
+    const logout = () => {
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+    };
+
+    const value = useMemo(
         () => ({
             user,
             token,
-            loading,  // Expose loading state
-            setUser,
-            setToken,
+            loading,
+            login,
             logout,
         }),
         [user, token, loading]
     );
 
     return (
-        <StateContext.Provider value={contextValue}>
+        <AuthContext.Provider value={value}>
             {children}
-        </StateContext.Provider>
+        </AuthContext.Provider>
     );
 };
 
-export const useStateContext = () => useContext(StateContext);
+export const useAuthContext = () => useContext(AuthContext);
+export const useStateContext = useAuthContext;
