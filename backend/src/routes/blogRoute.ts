@@ -1,13 +1,12 @@
 import { Router } from "express";
-import { AddBlog, AddTagToBlog, DeleteBlog, GetAllBlogs, GetAllTags, GetDashboardData, RemoveTagFromBlog, UpdateBlogStatus } from "../controller/blogController.js";
-import { Auth } from "../middleware/middleware.js";
+import { AddBlog, AddTagToBlog, DeleteBlog, GetAllBlogs, GetAllTags, RemoveTagFromBlog, UpdateBlogStatus } from "../controller/blogController.js";
 import { AddCategoryToBlog, CreateCategory, DeleteCategory, DeleteTag, GetCategories, UpdateCategory } from "../controller/categoryTagController.js";
+import { Auth } from "../middleware/middleware.js";
 
 
 const router = Router();
 
 // Dashboard - get blogs, categories, tags, stats
-router.get("/dashboard/:userId", Auth, GetDashboardData);
 router.get("/blogs/:userId", Auth, GetAllBlogs)
 
 // Add a new blog

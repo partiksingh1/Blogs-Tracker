@@ -10,16 +10,16 @@ import { SearchProvider } from './lib/SearchProvider.tsx'
 const queryClient = new QueryClient();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ContextProvider>
-      <SearchProvider>
-        <ThemeProvider>
-          <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <ContextProvider>
+          <ThemeProvider>
+            <SearchProvider>
               <App />
-            </BrowserRouter>
-          </QueryClientProvider>
-        </ThemeProvider>
-      </SearchProvider>
-    </ContextProvider>
+            </SearchProvider>
+          </ThemeProvider>
+        </ContextProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   </StrictMode>,
 )

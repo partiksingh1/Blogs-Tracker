@@ -1,4 +1,4 @@
-import express from "express"
+import express, { Request, Response, NextFunction } from "express"
 import { userRouter } from "./routes/userRoute.js";
 import dotenv from 'dotenv'
 import cors from 'cors';
@@ -23,6 +23,13 @@ app.use("/api/v1", router)
 app.use("/api/v1", aiRouter)
 app.get('/health', (_, res) => {
     res.status(200).send('OK');
+});
+
+// Global Error Handler
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error(err.stack);
+    const status = err.status || 500;
+    res.status(status).json({ message: err.message || "Internal Server Error" });
 });
 
 app.listen(port, () => {

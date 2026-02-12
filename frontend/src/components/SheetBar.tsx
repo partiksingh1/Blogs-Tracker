@@ -99,7 +99,7 @@ export function SheetBar({ blog }: SheetBarProps) {
         <>
             <SheetContent className="flex flex-col h-full w-full sm:max-w-md p-0">
                 <SheetHeader className="p-6 border-b">
-                    <SheetTitle className="text-lg md:text-xl break-words leading-tight">
+                    <SheetTitle className="text-lg md:text-xl wrap-break-words leading-tight">
                         {blog.title}
                     </SheetTitle>
                     <SheetDescription className="break-all text-sm text-muted-foreground line-clamp-2">
@@ -174,21 +174,26 @@ export function SheetBar({ blog }: SheetBarProps) {
                                         className="flex-1"
                                     />
 
-                                    <div className="flex gap-2">
+                                    <div className="flex items-center gap-2 h-10">
                                         {addCategoryToBlogMutation.isPending ? (
                                             <Loader2 className="animate-spin" size={20} />
                                         ) : (
-                                            <CheckIcon
-                                                className="cursor-pointer"
-                                                size={20}
+                                            <button
+                                                type="button"
                                                 onClick={handleCategorySubmit}
-                                            />
+                                                className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition"
+                                            >
+                                                <CheckIcon size={16} />
+                                            </button>
+
                                         )}
-                                        <X
-                                            className="cursor-pointer"
-                                            size={20}
+                                        <button
+                                            type="button"
                                             onClick={() => setIsAddCategoryOpen(false)}
-                                        />
+                                            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition"
+                                        >
+                                            <X size={16} />
+                                        </button>
                                     </div>
                                 </div>
                             ) : (
@@ -262,23 +267,25 @@ export function SheetBar({ blog }: SheetBarProps) {
                                     className="flex-1"
                                 />
 
-                                <div className="flex gap-2">
+                                <div className="flex items-center gap-2 h-10">
                                     {addTagMutation.isPending ? (
                                         <Loader2 className="animate-spin" size={20} />
                                     ) : (
-                                        <CheckIcon
-                                            className="cursor-pointer"
-                                            size={20}
-                                            onClick={() =>
-                                                handleTagSubmit(blog.id)
-                                            }
-                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleTagSubmit(blog.id)}
+                                            className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition"
+                                        >
+                                            <CheckIcon size={16} />
+                                        </button>
                                     )}
-                                    <X
-                                        className="cursor-pointer"
-                                        size={20}
+                                    <button
+                                        type="button"
                                         onClick={() => setIsAddTagOpen(false)}
-                                    />
+                                        className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-muted transition"
+                                    >
+                                        <X size={16} />
+                                    </button>
                                 </div>
                             </div>
                         ) : (
@@ -334,7 +341,7 @@ export function SheetBar({ blog }: SheetBarProps) {
 
             {/* Modal overlay */}
             {showSummaryModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
                     <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto relative">
                         <CardAction
                             className="absolute top-4 right-4 cursor-pointer"

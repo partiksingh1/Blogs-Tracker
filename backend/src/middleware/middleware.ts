@@ -3,32 +3,37 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
-export const Auth = async (req: Request, res: Response, next: NextFunction) => {
-    const token = req.header("Authorization")?.split(" ")[1];
-
-
-    if (!token) {
-        res.status(403).json({
-            message: "No token, pass the token"
-        })
-        return
-    }
-
+export const Auth = (req: Request, res: Response, next: NextFunction): void => {
     try {
-        const decoded = jwt.verify(token as string, `${process.env.JWT_SECRET}`)
-        if (!decoded) {
-            res.status(401).json({
-                message: "Access denied, invalid token"
-            })
-        }
-        else {
-            next();
-        }
-    } catch (error) {
-        console.log("error is", error);
+        const authHeader = req.header("Authorization");
 
-        res.status(500).json({
-            message: "Server error during token verification",
-        });
+        if (!authHeader) {
+            res.status(401).json({ message: "Authorization header missing" });
+            return; // just return, don't return res
+        }
+
+        const parts = authHeader.split(" ");
+        if (parts.length !== 2 || parts[0] !== "Bearer") {
+            res.status(401).json({ message: "Authorization header must be 'Bearer <token>'" });
+            return;
+        }
+
+        const token = parts[1];
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+
+        // Attach decoded payload
+        (req as any).user = decoded;
+
+        next(); // ✅ call next
+    } catch (error: any) {
+        console.error("JWT verification error:", error);
+
+        if (error.name === "JsonWebTokenError" || error.name === "TokenExpiredError") {
+            res.status(401).json({ message: "Invalid or expired token" });
+            return;
+        }
+
+        res.status(500).json({ message: "Server error during token verification" });
     }
-}
+};

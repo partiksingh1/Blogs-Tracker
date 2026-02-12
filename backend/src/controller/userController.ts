@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
-const prisma = new PrismaClient();
 import dotenv from "dotenv";
 import { OAuth2Client } from "google-auth-library";
+import { prisma } from "../config/db.js";
 dotenv.config();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const createToken = (user: { id: string; username: string; email: string }) => {
