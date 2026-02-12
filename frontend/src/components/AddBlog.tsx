@@ -80,7 +80,7 @@ export const CreateBlog = () => {
                 </Button>
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-106.25">
                 <DialogHeader>
                     <DialogTitle>Add a new blog</DialogTitle>
                 </DialogHeader>

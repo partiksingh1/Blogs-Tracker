@@ -17,11 +17,10 @@ import {
     AlertDialogDescription,
     AlertDialogFooter,
     AlertDialogHeader,
-    AlertDialogMedia,
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Loader2, Trash2Icon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useStateContext } from "@/lib/ContextProvider"
 import { Blog } from "@/types/blog"
 import { CheckIcon, X } from "lucide-react"
@@ -341,7 +340,7 @@ export function SheetBar({ blog }: SheetBarProps) {
 
             {/* Modal overlay */}
             {showSummaryModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-100 p-4">
                     <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto relative">
                         <CardAction
                             className="absolute top-4 right-4 cursor-pointer"
