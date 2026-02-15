@@ -1,6 +1,6 @@
 import { Blog } from "@/types/blog";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "./ui/card";
-import { Button } from "./ui/button";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Button } from "../../../components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,9 +10,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useCategoryMutations } from "@/api/useMutation";
 import { useStateContext } from "@/lib/ContextProvider";
 import toast from "react-hot-toast";
+import { useBlogMutations } from "../hooks/useBlogMutations";
 
 const colors = [
     "bg-red-600", "bg-red-700", "bg-red-800",
@@ -45,7 +45,7 @@ type BlogProps = {
 export const BlogCard = ({ blog }: BlogProps) => {
     const { user } = useStateContext();
     const userId = user?.id;
-    const { updateBlogMutation } = useCategoryMutations(userId)
+    const { updateStatus } = useBlogMutations(userId as string)
     const status = blog.isRead ? "READ" : "UNREAD";
     // Handlers
     const handleStatusChange = (blogId: string, newValue: string) => {
@@ -53,9 +53,9 @@ export const BlogCard = ({ blog }: BlogProps) => {
             toast.success("Status updated!")
         } else {
             if (newValue == "READ") {
-                updateBlogMutation.mutateAsync({ status: true, blogId })
+                updateStatus.mutateAsync({ status: true, blogId })
             } else {
-                updateBlogMutation.mutateAsync({ status: false, blogId })
+                updateStatus.mutateAsync({ status: false, blogId })
             }
         }
     }

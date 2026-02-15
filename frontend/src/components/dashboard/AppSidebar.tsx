@@ -11,12 +11,12 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import { useNavigate } from "react-router-dom";
 import { useStateContext } from "@/lib/ContextProvider";
-import { SideBarCategory } from "./SideBarCategory/SideBarCategory";
 import { Collapsible } from "@radix-ui/react-collapsible";
-import { SideBarTags } from "./SideBarTags/SideBarTags";
+import { SideBarCategory } from "@/features/categories/components/SideBarCategory/SideBarCategory";
+import { SideBarTags } from "@/features/tags/components/SideBarTags/SideBarTags";
 
 export function AppSidebar() {
     const navigate = useNavigate();

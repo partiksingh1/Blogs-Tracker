@@ -1,5 +1,5 @@
-import { BlogList } from "@/components/BlogList";
-import Layout from "../layout";
+import { BlogList } from "@/features/blogs/components/BlogList";
+import Layout from "./Layout";
 export const Dashboard = () => {
     return (
         <Layout>

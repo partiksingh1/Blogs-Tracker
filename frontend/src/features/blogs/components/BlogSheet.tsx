@@ -25,16 +25,16 @@ import { useStateContext } from "@/lib/ContextProvider"
 import { Blog } from "@/types/blog"
 import { CheckIcon, X } from "lucide-react"
 import { useState } from "react"
-import { useCategoryMutations } from "../api/useMutation"
-import { useQueryClient } from "@tanstack/react-query";
-import { Badge } from "./ui/badge";
-import { Card, CardAction, CardDescription, CardHeader } from "./ui/card";
+import { useBlogMutations } from "../hooks/useBlogMutations"
+import { useTagMutations } from "@/features/tags/hooks/useTagMutations"
+import { useCategoryMutations } from "@/features/categories/hooks/useCategoryMutations"
+import { Badge } from "../../../components/ui/badge";
+import { Card, CardAction, CardDescription, CardHeader } from "../../../components/ui/card";
 import ReactMarkdown from "react-markdown";
 interface SheetBarProps {
     blog: Blog
 }
 export function SheetBar({ blog }: SheetBarProps) {
-    const queryClient = useQueryClient();
     const [isAddTagOpen, setIsAddTagOpen] = useState(false)
     const [newTag, setNewTag] = useState("")
     const [summary, setSummary] = useState("")
@@ -44,25 +44,31 @@ export function SheetBar({ blog }: SheetBarProps) {
     const [tagToDelete, setTagToDelete] = useState<string | null>(null);
 
     const { user } = useStateContext();
-    const userId = user?.id;
-    const { addTagMutation, deleteTagMutation, deleteBlogMutation, summaryMutation, addCategoryToBlogMutation } = useCategoryMutations(userId);
+    const userId = user?.id as string;
+    const { removeBlog, summarize } = useBlogMutations(userId);
+    const { addTag, removeTagFromBlog } = useTagMutations(userId);
+    const { assignCategoryToBlog } = useCategoryMutations(userId);
+
     const handleTagSubmit = (blogId: string) => {
         if (!newTag.trim()) return;
-        addTagMutation.mutate({ newTag, blogId }, {
-            onSuccess: () => {
-                setNewTag("");
-                setIsAddTagOpen(false);
-                queryClient.invalidateQueries({
-                    // Invalidate the list so the new tag shows up in the dashboard immediately
-                    queryKey: ["blogs"]
-                })
+        addTag.mutate(
+            {
+                blogId,
+                tagName: newTag,
+            },
+            {
+                onSuccess: () => {
+                    setNewTag("");
+                    setIsAddTagOpen(false);
+                },
             }
-        });
+        );
+
     }
     const handleSummary = async (url: string) => {
-        summaryMutation.mutate(url, {
-            onSuccess: (data) => {
-                setSummary(data.summary)
+        summarize.mutate(url, {
+            onSuccess: (data: any) => {
+                setSummary(data?.summary)
                 setShowSummaryModal(true);
             }
         })
@@ -71,11 +77,12 @@ export function SheetBar({ blog }: SheetBarProps) {
     const handleCategorySubmit = () => {
         if (!newCategory.trim()) return;
 
-        addCategoryToBlogMutation.mutate(
+        assignCategoryToBlog.mutate(
             {
                 blogId: blog.id,
-                categoryName: newCategory
+                name: newCategory,
             },
+
             {
                 onSuccess: () => {
                     setNewCategory("");
@@ -87,12 +94,16 @@ export function SheetBar({ blog }: SheetBarProps) {
 
     const handleTagDelete = async (tagId: string, blogId: string) => {
         setTagToDelete(tagId);
-        deleteTagMutation.mutate({ tagId, blogId }, {
-            onSettled: () => setTagToDelete(null)
-        });
+        removeTagFromBlog.mutate(
+            { tagId, blogId },
+            {
+                onSettled: () => setTagToDelete(null),
+            }
+        );
+
     }
     const handleBlogDelete = async (blogId: string) => {
-        deleteBlogMutation.mutate(blogId)
+        removeBlog.mutate(blogId)
     }
     return (
         <>
@@ -141,10 +152,10 @@ export function SheetBar({ blog }: SheetBarProps) {
                                             e.preventDefault(); // Prevent closing immediately
                                             handleSummary(blog.url);
                                         }}
-                                        disabled={summaryMutation.isPending}
+                                        disabled={summarize.isPending}
                                         className="w-full sm:w-auto"
                                     >
-                                        {summaryMutation.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                                        {summarize.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
                                         Sure
                                     </AlertDialogAction>
                                 </AlertDialogFooter>
@@ -169,12 +180,12 @@ export function SheetBar({ blog }: SheetBarProps) {
                                         value={newCategory}
                                         onChange={(e) => setNewCategory(e.target.value)}
                                         placeholder="Enter category"
-                                        disabled={addCategoryToBlogMutation.isPending}
+                                        disabled={assignCategoryToBlog.isPending}
                                         className="flex-1"
                                     />
 
                                     <div className="flex items-center gap-2 h-10">
-                                        {addCategoryToBlogMutation.isPending ? (
+                                        {assignCategoryToBlog.isPending ? (
                                             <Loader2 className="animate-spin" size={20} />
                                         ) : (
                                             <button
@@ -262,12 +273,12 @@ export function SheetBar({ blog }: SheetBarProps) {
                                     value={newTag}
                                     onChange={(e) => setNewTag(e.target.value)}
                                     placeholder="Write a tag"
-                                    disabled={addTagMutation.isPending}
+                                    disabled={addTag.isPending}
                                     className="flex-1"
                                 />
 
                                 <div className="flex items-center gap-2 h-10">
-                                    {addTagMutation.isPending ? (
+                                    {addTag.isPending ? (
                                         <Loader2 className="animate-spin" size={20} />
                                     ) : (
                                         <button
@@ -319,11 +330,11 @@ export function SheetBar({ blog }: SheetBarProps) {
                                     Cancel
                                 </AlertDialogCancel>
                                 <AlertDialogAction
-                                    disabled={deleteBlogMutation.isPending}
+                                    disabled={removeBlog.isPending}
                                     onClick={() => handleBlogDelete(blog.id)}
                                     className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
                                 >
-                                    {deleteBlogMutation.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
+                                    {removeBlog.isPending ? <Loader2 className="animate-spin mr-2" size={16} /> : null}
                                     Delete
                                 </AlertDialogAction>
                             </AlertDialogFooter>

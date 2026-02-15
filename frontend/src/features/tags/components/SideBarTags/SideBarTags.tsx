@@ -7,14 +7,12 @@ import { CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsi
 import { ChevronRight, HashIcon } from "lucide-react";
 import { useStateContext } from "@/lib/ContextProvider";
 import { TagList } from "./TagList";
-import { useTags } from "@/api/useQueries";
+import { useTags } from "../../hooks/useTags";
 
 export const SideBarTags = () => {
-    const { user, token } = useStateContext();
+    const { user } = useStateContext();
     const userId = user?.id;
-
-    const tagsQuery = useTags(userId, token as string);
-
+    const tagsQuery = useTags(userId);
     return (
         <SidebarMenuItem>
             <CollapsibleTrigger asChild>
@@ -29,7 +27,7 @@ export const SideBarTags = () => {
                 {tagsQuery.isLoading ? (
                     <SidebarMenuSkeleton />
                 ) : (
-                    <TagList tags={tagsQuery.data?.tags ?? []} />
+                    <TagList tags={tagsQuery.data?.data.tags} />
                 )}
             </CollapsibleContent>
         </SidebarMenuItem>

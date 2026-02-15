@@ -1,6 +1,6 @@
 import { SidebarMenuSub } from "@/components/ui/sidebar";
-import { Tag } from "@/types/category";
 import { TagItem } from "./TagItem";
+import { Tag } from "@/types/tag";
 
 interface Props {
     tags: Tag[];

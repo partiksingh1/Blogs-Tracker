@@ -1,8 +1,8 @@
 import { Route, Routes } from "react-router-dom"
 import './App.css'
 import { Toaster } from 'react-hot-toast';
-import LandingPage from "./app/page";
-import { Dashboard } from "./app/dashboard/page";
+import LandingPage from "./pages/LandingPage";
+import { Dashboard } from "./pages/Dashboard";
 function App() {
   return (
     <>

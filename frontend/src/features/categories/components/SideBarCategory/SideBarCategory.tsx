@@ -6,17 +6,17 @@ import {
 import { CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Folder, ChevronRight } from "lucide-react";
 import { useStateContext } from "@/lib/ContextProvider";
-import { useCategoryMutations } from "../../api/useMutation";
 import { CategoryList } from "./CategoryList";
-import { useCategories } from "@/api/useQueries";
 import { useSearchContext } from "@/lib/SearchProvider";
+import { useCategories } from "../../hooks/useCategories";
+import { useCategoryMutations } from "../../hooks/useCategoryMutations";
 
 export const SideBarCategory = () => {
-    const { user, token } = useStateContext();
+    const { user } = useStateContext();
     const userId = user?.id;
     const { setSelectedCategory } = useSearchContext();
-    const categoriesQuery = useCategories(userId, token as string);
-    const { addCategory } = useCategoryMutations(userId);
+    const categoriesQuery = useCategories(userId);
+    const { addCategory } = useCategoryMutations(userId as string);
 
     return (
         <SidebarMenuItem>
@@ -39,7 +39,7 @@ export const SideBarCategory = () => {
                 ) : (
                     <CategoryList
                         categories={categoriesQuery.data ?? []}
-                        onAdd={(name: string) => addCategory.mutate(name)}
+                        onAdd={(name: string) => addCategory.mutate({ name })}
                         isAdding={addCategory.isPending}
                     />
                 )}

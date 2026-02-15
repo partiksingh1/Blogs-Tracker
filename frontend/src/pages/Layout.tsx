@@ -1,8 +1,8 @@
-import { CreateBlog } from "@/components/AddBlog";
-import { AppSidebar } from "@/components/AppSidebar"
+import { AppSidebar } from "@/components/dashboard/AppSidebar"
 import { ModeToggle } from "@/components/ToggleTheme";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { CreateBlogDialog } from "@/features/blogs/components/CreateBlogDialog";
 import { useSearchContext } from "@/lib/SearchProvider";
 
 export default function Layout({
@@ -32,7 +32,7 @@ export default function Layout({
                     </div>
                     <div className="flex-1">{header}</div>
                     <ModeToggle />
-                    <CreateBlog />
+                    <CreateBlogDialog />
                 </div>
                 {children}
             </main>

@@ -1,17 +1,29 @@
-FROM node:20-alpine
+# Stage 1 - Build the React / Vite app
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Copy package files and install dependencies
 COPY package*.json ./
+RUN npm install --production=false
 
-RUN npm install
-
+# Copy source code
 COPY . .
 
-# Build the frontend
+# Build the static frontend
 RUN npm run build
 
-# Serve the build with a lightweight server (optional: vite preview)
-# Bind to 0.0.0.0 for Docker
-EXPOSE 3000
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0"]
+# Stage 2 - Serve static files with lightweight Nginx
+FROM nginx:alpine
+
+# Copy built files from the builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Optional: copy custom nginx config if needed
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start Nginx
+CMD ["nginx", "-g", "daemon off;"]

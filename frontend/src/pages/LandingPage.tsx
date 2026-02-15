@@ -41,7 +41,6 @@ export default function LandingPage() {
                 toast.success(`Welcome, ${data.user.username}`);
                 navigate("/dashboard");
             } catch (err) {
-                console.error("Google login failed:", err);
                 toast.error("Google login failed");
             }
         },
