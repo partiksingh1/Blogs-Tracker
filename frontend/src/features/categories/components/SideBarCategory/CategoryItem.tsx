@@ -13,7 +13,7 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Category } from "@/types/category";
-import { useStateContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/AuthContext";
 import { useSearchContext } from "@/context/SearchContext";
 import { useCategoryMutations } from "../../hooks/useCategoryMutations";
 
@@ -26,7 +26,7 @@ interface Props {
 
 export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }: Props) => {
     const [value, setValue] = useState(category.name);
-    const { user } = useStateContext();
+    const { user } = useAuthContext();
     const { selectedCategory, setSelectedCategory } = useSearchContext();
     const userId = user?.id as string;
 

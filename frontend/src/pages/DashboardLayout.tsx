@@ -1,11 +1,11 @@
 import { AppSidebar } from "@/components/dashboard/AppSidebar"
-import { ModeToggle } from "@/components/ToggleTheme";
+import { ModeToggle } from "@/components/dashboard/ToggleTheme";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { useSearchContext } from "@/context/SearchContext";
 import { CreateBlogDialog } from "@/features/blogs/components/CreateBlogDialog";
 
-export default function Layout({
+export default function DashboardLayout({
     children,
     header
 }: {

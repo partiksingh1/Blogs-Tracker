@@ -3,7 +3,7 @@ import {
     SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 import { Loader2, Trash2 } from "lucide-react";
-import { useStateContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/AuthContext";
 import { Tag } from "@/types/tag";
 import { useTagMutations } from "../../hooks/useTagMutations";
 
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const TagItem = ({ tag }: Props) => {
-    const { user } = useStateContext();
+    const { user } = useAuthContext();
     const { deleteTag } = useTagMutations(user?.id as string);
 
     return (

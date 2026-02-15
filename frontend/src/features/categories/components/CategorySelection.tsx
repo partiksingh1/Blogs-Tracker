@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Category } from "@/types/category";
-import { useStateContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/AuthContext";
 import { useCategories } from "@/features/categories/hooks/useCategories";
 
 interface CategorySelectProps {
@@ -15,7 +15,7 @@ interface CategorySelectProps {
   onChange: (category: string) => void;
 }
 export const CategorySelect = ({ value, onChange }: CategorySelectProps) => {
-  const { user } = useStateContext();
+  const { user } = useAuthContext();
   const userId = user?.id;
 
   const categoriesQuery = useCategories(userId);

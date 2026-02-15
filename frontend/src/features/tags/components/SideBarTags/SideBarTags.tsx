@@ -5,12 +5,12 @@ import {
 } from "@/components/ui/sidebar";
 import { CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { ChevronRight, HashIcon } from "lucide-react";
-import { useStateContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/AuthContext";
 import { TagList } from "./TagList";
 import { useTags } from "../../hooks/useTags";
 
 export const SideBarTags = () => {
-    const { user } = useStateContext();
+    const { user } = useAuthContext();
     const userId = user?.id;
     const tagsQuery = useTags(userId);
     return (

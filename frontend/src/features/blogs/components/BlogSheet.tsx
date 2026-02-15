@@ -21,7 +21,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Loader2 } from "lucide-react";
-import { useStateContext } from "@/context/AuthContext"
+import { useAuthContext } from "@/context/AuthContext"
 import { Blog } from "@/types/blog"
 import { CheckIcon, X } from "lucide-react"
 import { useState } from "react"
@@ -43,7 +43,7 @@ export function SheetBar({ blog }: SheetBarProps) {
     const [newCategory, setNewCategory] = useState("");
     const [tagToDelete, setTagToDelete] = useState<string | null>(null);
 
-    const { user } = useStateContext();
+    const { user } = useAuthContext();
     const userId = user?.id as string;
     const { removeBlog, summarize } = useBlogMutations(userId);
     const { addTag, removeTagFromBlog } = useTagMutations(userId);

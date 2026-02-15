@@ -23,12 +23,12 @@ import { Loader2 } from "lucide-react";
 import { ChangeEvent, useState } from "react";
 import toast from "react-hot-toast";
 
-import { useStateContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/AuthContext";
 import { useBlogMutations } from "../hooks/useBlogMutations";
 import { CategorySelect } from "@/features/categories/components/CategorySelection";
 
 export const CreateBlogDialog = () => {
-    const { user } = useStateContext();
+    const { user } = useAuthContext();
     const userId = user?.id;
 
     const [title, setTitle] = useState("");

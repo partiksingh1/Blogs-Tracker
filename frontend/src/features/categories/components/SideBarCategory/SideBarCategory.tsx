@@ -5,14 +5,14 @@ import {
 } from "@/components/ui/sidebar";
 import { CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 import { Folder, ChevronRight } from "lucide-react";
-import { useStateContext } from "@/context/AuthContext";
+import { useAuthContext } from "@/context/AuthContext";
 import { CategoryList } from "./CategoryList";
 import { useSearchContext } from "@/context/SearchContext";
 import { useCategories } from "../../hooks/useCategories";
 import { useCategoryMutations } from "../../hooks/useCategoryMutations";
 
 export const SideBarCategory = () => {
-    const { user } = useStateContext();
+    const { user } = useAuthContext();
     const userId = user?.id;
     const { setSelectedCategory } = useSearchContext();
     const categoriesQuery = useCategories(userId);

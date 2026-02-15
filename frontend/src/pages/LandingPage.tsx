@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useCallback } from "react";
-import { useStateContext } from "@/context/AuthContext";
-import { ModeToggle } from "@/components/ToggleTheme";
+import { useAuthContext } from "@/context/AuthContext";
+import { ModeToggle } from "@/components/dashboard/ToggleTheme";
 import toast from "react-hot-toast";
 
 interface GoogleCredentialResponse {
@@ -14,7 +14,7 @@ interface GoogleCredentialResponse {
 
 export default function LandingPage() {
     const navigate = useNavigate();
-    const { user, login, loading } = useStateContext();
+    const { user, login, loading } = useAuthContext();
 
     const handleGoogleLogin = useCallback(
         async (response: GoogleCredentialResponse) => {
