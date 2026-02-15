@@ -23,7 +23,7 @@ import { Loader2 } from "lucide-react";
 import { ChangeEvent, useState } from "react";
 import toast from "react-hot-toast";
 
-import { useStateContext } from "@/lib/ContextProvider";
+import { useStateContext } from "@/context/AuthContext";
 import { useBlogMutations } from "../hooks/useBlogMutations";
 import { CategorySelect } from "@/features/categories/components/CategorySelection";
 

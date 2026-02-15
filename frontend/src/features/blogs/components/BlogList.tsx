@@ -1,15 +1,15 @@
 import { BlogCard } from "./BlogCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Blog } from "@/types/blog";
-import { useStateContext } from "@/lib/ContextProvider";
 import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 import { SheetBar } from "./BlogSheet";
-import { useSearchContext } from "@/lib/SearchProvider";
 import { useMemo } from "react";
 import { useBlogs } from "@/features/blogs/hooks/useBlog";
+import { useSearchContext } from "@/context/SearchContext";
+import { useAuthContext } from "@/context/AuthContext";
 
 export const BlogList = () => {
-  const { user, loading } = useStateContext();
+  const { user, loading } = useAuthContext();
   const { search, selectedCategory } = useSearchContext();
 
   const blogQuery = useBlogs(user?.id);

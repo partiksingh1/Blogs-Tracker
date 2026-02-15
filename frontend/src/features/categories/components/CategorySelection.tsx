@@ -6,7 +6,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Category } from "@/types/category";
-import { useStateContext } from "@/lib/ContextProvider";
+import { useStateContext } from "@/context/AuthContext";
 import { useCategories } from "@/features/categories/hooks/useCategories";
 
 interface CategorySelectProps {

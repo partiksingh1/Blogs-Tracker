@@ -13,8 +13,8 @@ import {
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Category } from "@/types/category";
-import { useStateContext } from "@/lib/ContextProvider";
-import { useSearchContext } from "@/lib/SearchProvider";
+import { useStateContext } from "@/context/AuthContext";
+import { useSearchContext } from "@/context/SearchContext";
 import { useCategoryMutations } from "../../hooks/useCategoryMutations";
 
 interface Props {

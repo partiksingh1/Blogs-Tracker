@@ -2,8 +2,8 @@ import { AppSidebar } from "@/components/dashboard/AppSidebar"
 import { ModeToggle } from "@/components/ToggleTheme";
 import { Input } from "@/components/ui/input";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { useSearchContext } from "@/context/SearchContext";
 import { CreateBlogDialog } from "@/features/blogs/components/CreateBlogDialog";
-import { useSearchContext } from "@/lib/SearchProvider";
 
 export default function Layout({
     children,

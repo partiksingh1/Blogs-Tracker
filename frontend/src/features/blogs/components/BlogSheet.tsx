@@ -21,7 +21,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Loader2 } from "lucide-react";
-import { useStateContext } from "@/lib/ContextProvider"
+import { useStateContext } from "@/context/AuthContext"
 import { Blog } from "@/types/blog"
 import { CheckIcon, X } from "lucide-react"
 import { useState } from "react"

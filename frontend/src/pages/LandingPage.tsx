@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useCallback } from "react";
-import { useStateContext } from "@/lib/ContextProvider";
+import { useStateContext } from "@/context/AuthContext";
 import { ModeToggle } from "@/components/ToggleTheme";
 import toast from "react-hot-toast";
 

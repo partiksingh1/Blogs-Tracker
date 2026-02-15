@@ -5,8 +5,8 @@ import App from './App.tsx'
 import { BrowserRouter } from 'react-router-dom'
 import { ThemeProvider } from './components/ThemeProvider.tsx'
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query"
-import { ContextProvider } from './lib/ContextProvider.tsx'
-import { SearchProvider } from './lib/SearchProvider.tsx'
+import { ContextProvider } from './context/AuthContext.tsx'
+import { SearchProvider } from './context/SearchContext.tsx'
 const queryClient = new QueryClient();
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

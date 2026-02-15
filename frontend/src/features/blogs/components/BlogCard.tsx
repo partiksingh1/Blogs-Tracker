@@ -10,9 +10,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useStateContext } from "@/lib/ContextProvider";
 import toast from "react-hot-toast";
 import { useBlogMutations } from "../hooks/useBlogMutations";
+import { useAuthContext } from "@/context/AuthContext";
 
 const colors = [
     "bg-red-600", "bg-red-700", "bg-red-800",
@@ -43,7 +43,7 @@ type BlogProps = {
     blog: Blog
 }
 export const BlogCard = ({ blog }: BlogProps) => {
-    const { user } = useStateContext();
+    const { user } = useAuthContext();
     const userId = user?.id;
     const { updateStatus } = useBlogMutations(userId as string)
     const status = blog.isRead ? "READ" : "UNREAD";

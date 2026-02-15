@@ -13,14 +13,14 @@ import {
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import { useNavigate } from "react-router-dom";
-import { useStateContext } from "@/lib/ContextProvider";
 import { Collapsible } from "@radix-ui/react-collapsible";
 import { SideBarCategory } from "@/features/categories/components/SideBarCategory/SideBarCategory";
 import { SideBarTags } from "@/features/tags/components/SideBarTags/SideBarTags";
+import { useAuthContext } from "@/context/AuthContext";
 
 export function AppSidebar() {
     const navigate = useNavigate();
-    const { logout } = useStateContext()
+    const { logout } = useAuthContext()
     const handleLogout = () => {
         logout()
         navigate("/");
