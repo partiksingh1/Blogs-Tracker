@@ -1,48 +1,33 @@
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-    SheetClose,
-    SheetContent,
-    SheetDescription,
-    SheetFooter,
-    SheetHeader,
-    SheetTitle,
-} from "@/components/ui/sheet"
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { useAuthContext } from "@/context/AuthContext"
-import { Blog } from "@/types/blog"
-import { CheckIcon, X } from "lucide-react"
-import { useState } from "react"
-import { useBlogMutations } from "../hooks/useBlogMutations"
-import { useTagMutations } from "@/features/tags/hooks/useTagMutations"
-import { useCategoryMutations } from "@/features/categories/hooks/useCategoryMutations"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { CheckIcon, X } from "lucide-react";
+import { useAuthContext } from "@/context/AuthContext";
+import { Blog } from "@/types/blog";
+import { useBlogMutations } from "../hooks/useBlogMutations";
+import { useTagMutations } from "@/features/tags/hooks/useTagMutations";
+import { useCategoryMutations } from "@/features/categories/hooks/useCategoryMutations";
 import { Badge } from "../../../components/ui/badge";
-import { Card, CardAction, CardDescription, CardHeader } from "../../../components/ui/card";
-import ReactMarkdown from "react-markdown";
+import { SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { SummaryModal } from "@/features/summary/SummaryModal";
+
 interface SheetBarProps {
-    blog: Blog
+    blog: Blog;
 }
+
 export function SheetBar({ blog }: SheetBarProps) {
-    const [isAddTagOpen, setIsAddTagOpen] = useState(false)
-    const [newTag, setNewTag] = useState("")
-    const [summary, setSummary] = useState("")
+    const [isAddTagOpen, setIsAddTagOpen] = useState(false);
+    const [newTag, setNewTag] = useState("");
+    const [summary, setSummary] = useState("");
     const [showSummaryModal, setShowSummaryModal] = useState(false);
     const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
     const [newCategory, setNewCategory] = useState("");
     const [tagToDelete, setTagToDelete] = useState<string | null>(null);
 
+    const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false); // New state for controlling the dialog
     const { user } = useAuthContext();
     const userId = user?.id as string;
     const { removeBlog, summarize } = useBlogMutations(userId);
@@ -63,17 +48,21 @@ export function SheetBar({ blog }: SheetBarProps) {
                 },
             }
         );
+    };
 
-    }
     const handleSummary = async (url: string) => {
         summarize.mutate(url, {
             onSuccess: (data: any) => {
-                setSummary(data?.summary)
+                setSummary(data?.summary);
                 setShowSummaryModal(true);
-            }
-        })
+                setIsSummaryDialogOpen(false); // Close the dialog after success
+            },
+            onError: () => {
+                setIsSummaryDialogOpen(false); // Close the dialog on error as well
+            },
+        });
+    };
 
-    }
     const handleCategorySubmit = () => {
         if (!newCategory.trim()) return;
 
@@ -82,12 +71,11 @@ export function SheetBar({ blog }: SheetBarProps) {
                 blogId: blog.id,
                 name: newCategory,
             },
-
             {
                 onSuccess: () => {
                     setNewCategory("");
                     setIsAddCategoryOpen(false);
-                }
+                },
             }
         );
     };
@@ -100,25 +88,21 @@ export function SheetBar({ blog }: SheetBarProps) {
                 onSettled: () => setTagToDelete(null),
             }
         );
+    };
 
-    }
     const handleBlogDelete = async (blogId: string) => {
-        removeBlog.mutate(blogId)
-    }
+        removeBlog.mutate(blogId);
+    };
+
     return (
         <>
             <SheetContent className="flex flex-col h-full w-full sm:max-w-md p-0">
                 <SheetHeader className="p-6 border-b">
-                    <SheetTitle className="text-lg md:text-xl wrap-break-words leading-tight">
-                        {blog.title}
-                    </SheetTitle>
-                    <SheetDescription className="break-all text-sm text-muted-foreground line-clamp-2">
-                        {blog.url}
-                    </SheetDescription>
+                    <SheetTitle className="text-lg md:text-xl wrap-break-words leading-tight">{blog.title}</SheetTitle>
+                    <SheetDescription className="break-all text-sm text-muted-foreground line-clamp-2">{blog.url}</SheetDescription>
                 </SheetHeader>
 
                 <div className="flex-1 overflow-y-auto p-6 space-y-8">
-
                     {/* Actions Grid */}
                     <div className="grid grid-cols-2 gap-3">
                         <Button
@@ -130,7 +114,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                         </Button>
 
                         {/* Summarize */}
-                        <AlertDialog>
+                        <AlertDialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen}>
                             <AlertDialogTrigger asChild>
                                 <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                                     Summarize
@@ -144,9 +128,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                                     </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                                    <AlertDialogCancel className="w-full sm:w-auto">
-                                        Cancel
-                                    </AlertDialogCancel>
+                                    <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
                                     <AlertDialogAction
                                         onClick={(e) => {
                                             e.preventDefault(); // Prevent closing immediately
@@ -166,13 +148,8 @@ export function SheetBar({ blog }: SheetBarProps) {
                     {/* Category */}
                     <div className="space-y-2">
                         <Label>Category</Label>
-
                         <div className="flex flex-wrap items-center gap-2">
-                            {blog?.category?.name && !isAddCategoryOpen && (
-                                <Badge className="px-3 py-1">
-                                    {blog.category.name}
-                                </Badge>
-                            )}
+                            {blog?.category?.name && !isAddCategoryOpen && <Badge className="px-3 py-1">{blog.category.name}</Badge>}
 
                             {isAddCategoryOpen ? (
                                 <div className="flex flex-col sm:flex-row gap-2 w-full">
@@ -195,7 +172,6 @@ export function SheetBar({ blog }: SheetBarProps) {
                                             >
                                                 <CheckIcon size={16} />
                                             </button>
-
                                         )}
                                         <button
                                             type="button"
@@ -207,11 +183,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                                     </div>
                                 </div>
                             ) : (
-                                <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={() => setIsAddCategoryOpen(true)}
-                                >
+                                <Button size="sm" variant="secondary" onClick={() => setIsAddCategoryOpen(true)}>
                                     {blog?.category ? "Change" : "Add"} Category
                                 </Button>
                             )}
@@ -221,41 +193,28 @@ export function SheetBar({ blog }: SheetBarProps) {
                     {/* Date */}
                     <div className="space-y-1">
                         <Label>Added on</Label>
-                        <p className="text-sm text-muted-foreground">
-                            {blog.createdAt.substring(0, 10)}
-                        </p>
+                        <p className="text-sm text-muted-foreground">{blog.createdAt.substring(0, 10)}</p>
                     </div>
 
                     {/* Tags */}
                     <div className="space-y-3">
                         <Label>Tags</Label>
-
                         <div className="flex flex-wrap gap-2">
                             {blog.tags?.map((tag) => (
                                 <AlertDialog key={tag.id}>
                                     <AlertDialogTrigger asChild>
-                                        <Badge className="cursor-pointer hover:scale-105 transition">
-                                            {tag.name}
-                                        </Badge>
+                                        <Badge className="cursor-pointer hover:scale-105 transition">{tag.name}</Badge>
                                     </AlertDialogTrigger>
                                     <AlertDialogContent className="max-w-sm">
                                         <AlertDialogHeader>
-                                            <AlertDialogTitle>
-                                                Remove {tag.name}?
-                                            </AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Are you sure you want to remove this tag?
-                                            </AlertDialogDescription>
+                                            <AlertDialogTitle>Remove {tag.name}?</AlertDialogTitle>
+                                            <AlertDialogDescription>Are you sure you want to remove this tag?</AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                                            <AlertDialogCancel className="w-full sm:w-auto">
-                                                Cancel
-                                            </AlertDialogCancel>
+                                            <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
                                             <AlertDialogAction
                                                 disabled={tagToDelete === tag.id}
-                                                onClick={() =>
-                                                    handleTagDelete(tag.id, blog.id)
-                                                }
+                                                onClick={() => handleTagDelete(tag.id, blog.id)}
                                                 className="w-full sm:w-auto bg-red-600 hover:bg-red-700"
                                             >
                                                 {tagToDelete === tag.id ? <Loader2 className="animate-spin mr-2" size={16} /> : "Remove"}
@@ -299,11 +258,7 @@ export function SheetBar({ blog }: SheetBarProps) {
                                 </div>
                             </div>
                         ) : (
-                            <Button
-                                variant="outline"
-                                className="border-dashed w-fit"
-                                onClick={() => setIsAddTagOpen(true)}
-                            >
+                            <Button variant="outline" className="border-dashed w-fit" onClick={() => setIsAddTagOpen(true)}>
                                 Add Tag
                             </Button>
                         )}
@@ -314,21 +269,15 @@ export function SheetBar({ blog }: SheetBarProps) {
                 <SheetFooter className="p-6 border-t mt-auto flex-col sm:flex-row gap-2 sm:justify-between">
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
-                            <Button className="w-full sm:w-auto bg-red-500">
-                                Delete
-                            </Button>
+                            <Button className="w-full sm:w-auto bg-red-500">Delete</Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent className="max-w-sm">
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Delete blog?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    This action cannot be undone.
-                                </AlertDialogDescription>
+                                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-                                <AlertDialogCancel className="w-full sm:w-auto">
-                                    Cancel
-                                </AlertDialogCancel>
+                                <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
                                 <AlertDialogAction
                                     disabled={removeBlog.isPending}
                                     onClick={() => handleBlogDelete(blog.id)}
@@ -349,29 +298,8 @@ export function SheetBar({ blog }: SheetBarProps) {
                 </SheetFooter>
             </SheetContent>
 
-            {/* Modal overlay */}
-            {showSummaryModal && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-100 p-4">
-                    <Card className="w-full max-w-2xl max-h-[80vh] overflow-y-auto relative">
-                        <CardAction
-                            className="absolute top-4 right-4 cursor-pointer"
-                            onClick={() => {
-                                setShowSummaryModal(false);
-                                setSummary("");
-                            }}
-                        >
-                            <X />
-                        </CardAction>
-
-                        <CardHeader>
-                            <CardDescription className="prose prose-sm md:prose-base max-w-none">
-                                <ReactMarkdown>{summary}</ReactMarkdown>
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
-                </div>
-            )}
-
+            {/* Summary Modal */}
+            {showSummaryModal && <SummaryModal summary={summary} setShowSummaryModal={setShowSummaryModal} />}
         </>
-    )
+    );
 }
