@@ -18,19 +18,16 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Login to Docker Hub
       - name: Docker Hub Login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3️⃣ Build & Push Backend Image
-      - name: Build and Push Backend Image
+      - name: Build & Push Backend Image
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -39,7 +36,6 @@ jobs:
             partiksingh28/blogzone-server:latest
             partiksingh28/blogzone-server:${{ github.sha }}
 
-      # 4️⃣ Deploy Backend to Hetzner
       - name: Deploy Backend on Hetzner
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -52,27 +48,23 @@ jobs:
             docker compose up -d --no-deps backend
             docker image prune -f
 
-
   # =========================
   # 🟢 Frontend Deployment
   # =========================
   deploy-frontend:
     runs-on: ubuntu-latest
-    
+
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Login to Docker Hub
       - name: Docker Hub Login
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 3️⃣ Build & Push Frontend Image
-      - name: Build and Push Frontend Image
+      - name: Build & Push Frontend Image
         uses: docker/build-push-action@v5
         with:
           context: ./frontend
@@ -80,8 +72,8 @@ jobs:
           tags: |
             partiksingh28/blogzone-frontend:latest
             partiksingh28/blogzone-frontend:${{ github.sha }}
+          platforms: linux/amd64   # Ensure server architecture compatibility
 
-      # 4️⃣ Deploy Frontend to Hetzner
       - name: Deploy Frontend on Hetzner
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -90,6 +82,21 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd /opt/blogzone
+
+            # Stop frontend container only
+            docker compose stop frontend
+
+            # Remove old container
+            docker compose rm -f frontend
+
+            # Pull latest image
             docker compose pull frontend
-            docker compose up -d --no-deps frontend
+
+            # Recreate frontend container
+            docker compose up -d frontend
+
+            # Optional: prune unused images
             docker image prune -f
+
+            # Reload host Nginx to ensure SPA fallback works
+            systemctl reload nginx
