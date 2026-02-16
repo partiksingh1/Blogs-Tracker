@@ -1,89 +1,115 @@
+# BlogZone 🚀
 
-# Blogs Zone
+**BlogZone** is a modern, full-stack web application designed to help developers and avid readers manage their reading lists. It allows users to organize blogs into categories, tag them for easy filtering, track read status, and leverage AI to generate instant summaries of articles.
 
+![BlogZone Dashboard](./frontend/public/hero.png)
 
-A modern web application for tracking and managing blog posts with a clean, responsive interface.
+## ✨ Key Features
 
-## Description
-Blogs Zone is a full-stack application that helps users manage their blog posts in one place. It provides features for creating, tracking, and organizing blog content with an intuitive user interface.
+- **🔐 Secure Authentication**: Google Sign-In integration for seamless access.
+- **📊 Interactive Dashboard**: Centralized view of all your blogs with search and filtering capabilities.
+- **🤖 AI-Powered Summaries**: Instantly generate summaries for long articles using AI integration.
+- **🏷️ Organization**:
+  - **Categories**: Group blogs into custom categories (e.g., React, DevOps, Lifestyle).
+  - **Tags**: Add color-coded tags to entries for granular filtering.
+- **✅ Progress Tracking**: Mark articles as "Read" or "Unread" to keep track of your reading list.
+- **🎨 Modern UI**: Fully responsive design with Dark/Light mode support, built with Shadcn UI and Tailwind CSS v4.
 
-## Features
-- AI powered summarization
-- User authentication and account management
-- Blog post creation and management
-- Light/dark mode toggle
-- Responsive design for all devices
-- Personalized user dashboard
+## 🛠️ Tech Stack
 
-### Tech Stack
+### Frontend
+- **Framework**: React 19 + Vite
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS v4, Tailwindcss-animate
+- **UI Components**: Shadcn UI (Radix UI primitives), Lucide React
+- **State Management**: TanStack Query (React Query) v5, Context API
+- **Routing**: React Router DOM v7
+- **Forms**: React Hook Form + Zod
 
-#### Frontend
-- React 19
-- TypeScript
-- Vite
-- TailwindCSS
-- Radix UI components
-- React Router
-- React Hook Form
-- Axios
-#### Frontend
-- Node.js
-- Express
-- TypeScript
-- Prisma ORM
-- PostgreSQL
-- JWT Authentication
-- Zod validation
-- Google GenAI integration
-- Nodemailer
+### Backend & DevOps
+- **Containerization**: Docker
+- **CI/CD**: GitHub Actions
+- **Hosting**: Hetzner VPS
+- **Orchestration**: Docker Compose
+- **Reverse Proxy**: Nginx
 
-## Installation
-#### Prerequisites
-- Node.js (v18 or higher)
-- npm or yarn
-### Local Setup
-1) Clone the repository:
+## 🚀 Getting Started
 
-```bash
-  git clone https://github.com/partiksingh1/blogs-tracker.git
-  cd blogs-tracker
+### Prerequisites
+- Node.js (v18+)
+- Docker (optional, for containerized runs)
+- A Google Cloud Project (for OAuth Client ID)
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/blogzone.git
+   cd blogzone
+   ```
+
+2. **Frontend Setup**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+3. **Environment Variables**
+   Create a `.env` file in the `frontend` directory:
+   ```env
+   VITE_BASE_URL=http://localhost:8080/api
+   VITE_GOOGLE_CLIENT_ID=your-google-client-id-here
+   ```
+
+4. **Run Development Server**
+   ```bash
+   npm run dev
+   ```
+   The app will be available at `http://localhost:5173`.
+
+## 📂 Project Structure
+
+```text
+frontend/src/
+├── components/         # Shared UI components (ui/, dashboard/, LandingPage/)
+├── context/            # Global contexts (AuthContext, SearchContext)
+├── features/           # Feature-based modules
+│   ├── blogs/          # Blog listing, cards, creation, sheets
+│   ├── categories/     # Sidebar category management
+│   └── tags/           # Sidebar tag management
+├── hooks/              # Custom hooks (React Query wrappers)
+├── lib/                # Utilities (utils, queryKeys)
+├── pages/              # Route views (LandingPage, Dashboard)
+└── types/              # TypeScript interfaces
 ```
-2. Install dependencies:
-#### Frontend
-```bash
-  cd frontend
-  npm install
-```
-#### Backend
-```bash
-  cd backend
-  npm install
- ```
-3. Set up environment variables:
-- Create a .env file in the backend directory based on provided example
-4. Start the development servers:
-#### Frontend
-```bash
-  cd frontend
-  npm run dev
-```
-#### Backend
-```bash
-  cd backend
-  npm run dev
- ```
 
-## Contributing
-1. Fork the repository
-2. Create a feature branch (git checkout -b feature/amazing-feature)
-3. Commit your changes (git commit -m 'Add some amazing feature')
-4. Push to the branch (git push origin feature/amazing-feature)
-5. Open a Pull Request
+## 🚢 Deployment
 
-### Created by Partik Singh
-## Screenshots
-<img width="1440" height="787" alt="Screenshot 2025-08-13 at 11 30 13 PM" src="https://github.com/user-attachments/assets/bb5fe26a-aeec-451d-8f20-3ec13ff2f897" />
-<img width="1436" height="785" alt="Screenshot 2025-08-13 at 11 30 46 PM" src="https://github.com/user-attachments/assets/2e1dc2bb-b4e9-440b-a13c-6197146ee155" />
-<img width="1435" height="787" alt="Screenshot 2025-08-13 at 11 32 02 PM" src="https://github.com/user-attachments/assets/b8961e71-5d58-432c-8c5f-83249e6a594c" />
+The project uses **GitHub Actions** for Continuous Deployment.
 
+### Workflow (`deploy.yml`)
+1. **Trigger**: Pushes to the `master` branch.
+2. **Build**:
+   - Builds Docker images for Frontend and Backend.
+   - Pushes images to Docker Hub.
+3. **Deploy**:
+   - SSHs into the Hetzner VPS.
+   - Pulls the latest images.
+   - Restarts containers using Docker Compose.
+   - Reloads Nginx to serve the updated SPA.
 
+## 🤝 Contributing
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+## 📄 License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+Built with ❤️ by Partik Singh
