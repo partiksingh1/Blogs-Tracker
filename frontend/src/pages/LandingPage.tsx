@@ -6,6 +6,7 @@ import { useEffect, useCallback } from "react";
 import { useAuthContext } from "@/context/AuthContext";
 import { ModeToggle } from "@/components/dashboard/ToggleTheme";
 import toast from "react-hot-toast";
+import { FeaturesFAQ } from "@/components/LandingPage/FeaturesFAQ";
 
 interface GoogleCredentialResponse {
     credential: string;
@@ -15,7 +16,6 @@ interface GoogleCredentialResponse {
 export default function LandingPage() {
     const navigate = useNavigate();
     const { user, login, loading } = useAuthContext();
-
     const handleGoogleLogin = useCallback(
         async (response: GoogleCredentialResponse) => {
             try {
@@ -191,45 +191,23 @@ export default function LandingPage() {
                                 alt="BlogZone Dashboard Preview"
                                 width={1000}
                                 height={500}
-                                className="w-full h-auto mask-image-gradient"
+                                className="w-full h-auto"
+                                style={{
+                                    maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 100%)",
+                                    WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 100%)",
+                                    maskRepeat: "no-repeat",
+                                    WebkitMaskRepeat: "no-repeat",
+                                }}
                             />
                         </div>
+
                     </div>
                 </div>
             </div>
         </section >
 
         {/* Features */}
-        < section id="features" className="sm:py-10" >
-            <div className="mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mx-auto max-w-2xl text-center mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight sm:text-5xl">How it works</h2>
-                </div>
-                <div className="mt-20 flex flex-col gap-16 px-4 md:px-16">
-                    {features.map((feature, index) => (
-                        <div
-                            key={index}
-                            className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-12"
-                        >
-                            {/* Left: Title + Description */}
-                            <div className="md:w-1/2 flex flex-col justify-center items-center text-center md:text-left">
-                                <h2 className="text-2xl md:text-4xl font-bold mb-4 ">{feature.title}</h2>
-                                <p className="text-base md:text-xl text-center mt-5">{feature.description}</p>
-                            </div>
-
-                            {/* Right: Image */}
-                            <div className="md:w-1/2 flex justify-center md:justify-center">
-                                <img
-                                    src={feature.image}
-                                    alt={feature.title}
-                                    className="w-full max-w-md rounded-lg shadow-lg object-cover"
-                                />
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </section >
+        <FeaturesFAQ features={features} />
 
         {/* Footer */}
         < footer className="bg-gray-900 text-white py-12 text-center" >

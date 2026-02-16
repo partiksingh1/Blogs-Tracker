@@ -12,6 +12,16 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogAction,
+    AlertDialogCancel,
+} from "@/components/ui/alert-dialog";
 import { Category } from "@/types/category";
 import { useAuthContext } from "@/context/AuthContext";
 import { useSearchContext } from "@/context/SearchContext";
@@ -24,15 +34,20 @@ interface Props {
     onCancelEdit: () => void;
 }
 
-export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }: Props) => {
+export const CategoryItem = ({
+    category,
+    isEditing,
+    onStartEdit,
+    onCancelEdit,
+}: Props) => {
     const [value, setValue] = useState(category.name);
     const { user } = useAuthContext();
     const { selectedCategory, setSelectedCategory } = useSearchContext();
-    const userId = user?.id as string;
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
+    const userId = user?.id as string;
     const { updateCategoryMutation, removeCategory } = useCategoryMutations(userId);
 
-    // Handle category update
     const handleUpdate = () => {
         if (!value.trim() || value === category.name) {
             onCancelEdit();
@@ -44,12 +59,13 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
         );
     };
 
-    // Handle category deletion
     const handleDelete = () => {
-        if (confirm("Are you sure you want to delete this category?")) {
-            removeCategory.mutate(category.id);
-            if (selectedCategory === category.id) setSelectedCategory(""); // deselect if deleting selected
-        }
+        removeCategory.mutate(category.id, {
+            onSuccess: () => {
+                if (selectedCategory === category.id) setSelectedCategory("");
+                setIsDeleteDialogOpen(false);
+            },
+        });
     };
 
     return (
@@ -58,7 +74,8 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
                 onClick={() =>
                     setSelectedCategory(selectedCategory === category.id ? "" : category.id)
                 }
-                className={`cursor-pointer ${selectedCategory === category.id ? "bg-gray-400" : ""}`}
+                className={`cursor-pointer ${selectedCategory === category.id ? "bg-gray-200 dark:bg-gray-700" : ""
+                    }`}
             >
                 <div className="flex w-full items-center justify-between gap-2">
                     {/* Category Name / Editing Input */}
@@ -71,9 +88,10 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
                                 if (e.key === "Enter") handleUpdate();
                             }}
                             autoFocus
+                            className="flex-1 px-2 py-1 text-sm"
                         />
                     ) : (
-                        <span className="truncate">{category.name}</span>
+                        <span className="truncate text-sm">{category.name}</span>
                     )}
 
                     {/* Actions */}
@@ -91,7 +109,7 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
                                     </button>
                                 </DropdownMenuTrigger>
 
-                                <DropdownMenuContent>
+                                <DropdownMenuContent className="w-40">
                                     <DropdownMenuItem onClick={onStartEdit}>
                                         <Edit size={16} className="mr-2" /> Edit
                                     </DropdownMenuItem>
@@ -99,14 +117,13 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
                                     <DropdownMenuSeparator />
 
                                     <DropdownMenuItem
+                                        className="flex items-center gap-2 text-red-600"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleDelete();
+                                            setIsDeleteDialogOpen(true);
                                         }}
-                                        className="flex items-center gap-2 text-red-600"
                                     >
-                                        <Trash2 size={16} />
-                                        Delete
+                                        <Trash2 size={16} /> Delete
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -114,7 +131,7 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
                     ) : (
                         <div className="flex items-center gap-2">
                             <button
-                                className="cursor-pointer"
+                                className="p-1 rounded hover:bg-muted cursor-pointer"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     onCancelEdit();
@@ -124,7 +141,7 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
                             </button>
 
                             <button
-                                className="cursor-pointer"
+                                className="p-1 rounded hover:bg-muted cursor-pointer"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     handleUpdate();
@@ -141,6 +158,31 @@ export const CategoryItem = ({ category, isEditing, onStartEdit, onCancelEdit }:
                     )}
                 </div>
             </SidebarMenuSubButton>
+
+            {/* Alert Dialog for Delete Confirmation */}
+            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Category</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Are you sure you want to delete the category "{category.name}"? This
+                            action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="space-x-2">
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                            className="bg-red-600 text-white hover:bg-red-700"
+                            onClick={handleDelete}
+                        >
+                            {removeCategory.isPending ? (
+                                <Loader2 size={16} className="animate-spin mr-2" />
+                            ) : null}
+                            Delete
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </SidebarMenuSubItem>
     );
 };
