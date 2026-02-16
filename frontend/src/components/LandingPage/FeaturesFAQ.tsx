@@ -17,7 +17,7 @@ interface FeaturesSectionProps {
 export function FeaturesFAQ({ features }: FeaturesSectionProps) {
     return (
         <section id="features" className="py-16">
-            <div className="mx-auto max-w-6xl">
+            <div className="mx-auto max-w-6xl p-3">
                 <h2 className="text-3xl font-bold text-center mb-10 sm:text-4xl">
                     FAQs
                 </h2>

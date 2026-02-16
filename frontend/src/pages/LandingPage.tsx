@@ -105,114 +105,101 @@ export default function LandingPage() {
             image: "/c2.png",
         },
     ];
-    return (<div className="min-h-screen"> {/* Header */}
-        <header className="top-0 border-b-2">
-            <div className="mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex h-16 items-center justify-between">
-                    <div className="flex items-center space-x-2 p-3 m-2 rounded-md">
-                        <Sparkles className="h-7 w-7" />
-                        <span className="text-3xl font-bold">
-                            BlogZone
-                        </span>
-                    </div>
-
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-end space-x-4">
-                            <ModeToggle />
+    return (
+        <div className="min-h-screen flex flex-col"> {/* Ensure full viewport height */}
+            {/* Header */}
+            <header className="top-0 border-b-2">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 items-center justify-between">
+                        <div className="flex items-center space-x-2 p-3 m-2 rounded-md">
+                            <Sparkles className="h-7 w-7" />
+                            <span className="text-3xl font-bold">BlogZone</span>
                         </div>
-                        {
-                            !user ? (
-                                <Button
-                                    className="cursor-pointer"
-                                >Sign In
-                                </Button>
-                            ) : (
-                                <Button
-                                    asChild
-                                    className=""
-                                >
 
-                                    <Link to="/dashboard">
-                                        Dashboard
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </Button>
-                            )
-                        }
-                    </div>
-
-                </div>
-            </div>
-        </header>
-
-        {/* Hero Section */}
-        <section className="pt-10">
-            <div className="mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="mx-auto max-w-4xl text-center">
-                    <Badge variant="secondary" className="mb-6">
-                        <Sparkles className="mr-2 h-3 w-3" />
-                        AI-Integrated Blog Management
-                    </Badge>
-
-                    <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-                        Blog management,{" "}
-                        <span className="text-gray-500">
-                            simplified
-                        </span>
-                    </h1>
-
-                    <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl max-w-2xl mx-auto">
-                        Seamlessly manage, create, and organize your blogs with an intuitive interface powered by artificial
-                        intelligence.
-                    </p>
-
-                    <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                        {!loading && !user && (
-                            <div id="google-signin-btn" className="flex justify-center" />
-                        )}
-                        {!loading && user && (
-                            <div className="bg-black text-white border-white border p-2 m-1 rounded-md">
-                                👋 Hi, {user.username}
+                        <div className="flex items-center space-x-4">
+                            <div className="flex items-end space-x-4">
+                                <ModeToggle />
                             </div>
-                        )}
-                        <Button className="bg-white text-black border-black hover:bg-white outline-dotted">
-                            <a href="#features">FAQs</a>
-                        </Button>
-                    </div>
-                </div>
-
-                {/* Hero Image */}
-                <div className="mt-16 relative">
-                    <div className="relative mx-auto max-w-6xl">
-                        <div className="absolute bg-linear-to-t from-white via-transparent to-transparent" />
-                        <div className="relative overflow-hidden rounded-xl">
-                            <img
-                                src="/hero.png"
-                                alt="BlogZone Dashboard Preview"
-                                width={1000}
-                                height={500}
-                                className="w-full h-auto"
-                                style={{
-                                    maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 100%)",
-                                    WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 100%)",
-                                    maskRepeat: "no-repeat",
-                                    WebkitMaskRepeat: "no-repeat",
-                                }}
-                            />
+                            {
+                                !user ? (
+                                    <Button className="cursor-pointer">Sign In</Button>
+                                ) : (
+                                    <Button asChild>
+                                        <Link to="/dashboard">
+                                            Dashboard
+                                            <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Link>
+                                    </Button>
+                                )
+                            }
                         </div>
-
                     </div>
                 </div>
-            </div>
-        </section >
+            </header>
 
-        {/* Features */}
-        <FeaturesFAQ features={features} />
+            {/* Hero Section */}
+            <section className="pt-10">
+                <div className="mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="mx-auto max-w-4xl text-center">
+                        <Badge variant="secondary" className="mb-6">
+                            <Sparkles className="mr-2 h-3 w-3" />
+                            AI-Integrated Blog Management
+                        </Badge>
 
-        {/* Footer */}
-        < footer className="bg-gray-900 text-white py-12 text-center" >
-            <p>&copy; {new Date().getFullYear()} BlogZone. All rights reserved.</p>
-        </footer >
-    </div >
+                        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+                            Blog management, <span className="text-gray-500">simplified</span>
+                        </h1>
+
+                        <p className="mt-6 text-lg leading-8 text-gray-600 sm:text-xl max-w-2xl mx-auto">
+                            Seamlessly manage, create, and organize your blogs with an intuitive interface powered by artificial intelligence.
+                        </p>
+
+                        <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                            {!loading && !user && (
+                                <div id="google-signin-btn" className="flex justify-center" />
+                            )}
+                            {!loading && user && (
+                                <div className="bg-black text-white border-white border p-2 m-1 rounded-md">
+                                    👋 Hi, {user.username}
+                                </div>
+                            )}
+                            <Button className="bg-white text-black border-black hover:bg-white outline-dotted">
+                                <a href="#features">FAQs</a>
+                            </Button>
+                        </div>
+                    </div>
+
+                    {/* Hero Image */}
+                    <div className="mt-16 relative">
+                        <div className="relative mx-auto max-w-6xl">
+                            <div className="absolute bg-linear-to-t from-white via-transparent to-transparent" />
+                            <div className="relative overflow-hidden rounded-xl">
+                                <img
+                                    src="/hero.png"
+                                    alt="BlogZone Dashboard Preview"
+                                    width={1000}
+                                    height={500}
+                                    className="w-full h-auto"
+                                    style={{
+                                        maskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 100%)",
+                                        WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 70%, rgba(0,0,0,0.2) 100%)",
+                                        maskRepeat: "no-repeat",
+                                        WebkitMaskRepeat: "no-repeat",
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Features */}
+            <FeaturesFAQ features={features} />
+
+            {/* Footer */}
+            <footer className="bg-gray-900 text-white py-12 text-center mt-auto">
+                <p>&copy; {new Date().getFullYear()} BlogZone. All rights reserved.</p>
+            </footer>
+        </div>
     );
 }
