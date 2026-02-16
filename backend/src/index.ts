@@ -32,6 +32,6 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     res.status(status).json({ message: err.message || "Internal Server Error" });
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`listining on port ${port}`);
 })
